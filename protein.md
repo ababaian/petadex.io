@@ -7,7 +7,6 @@ title: Protein
 
 This page displays a digital clock with the current time. The clock updates every second.
 
-```html
 <div id="clock" style="font-family: Arial, sans-serif; font-size: 24px; text-align: center; margin-top: 20px;"></div>
 
 <script>
@@ -21,4 +20,3 @@ This page displays a digital clock with the current time. The clock updates ever
   setInterval(updateClock, 1000);
   updateClock(); // Initial call to display the current time immediately
 </script>
-```
