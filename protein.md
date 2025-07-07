@@ -1,3 +1,8 @@
+---
+layout: default
+title: Protein
+---
+
 # Protein Analysis
 
 This page displays a digital clock with the current time. The clock updates every second.
