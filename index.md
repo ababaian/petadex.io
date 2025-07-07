@@ -1,3 +1,8 @@
+---
+layout: default
+title: Petadex.io
+---
+
 # Petadex.io
 
 Welcome to Petadex.io - your portal for protein data exploration.
