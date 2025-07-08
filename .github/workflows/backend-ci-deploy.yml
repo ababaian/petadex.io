@@ -24,7 +24,7 @@ jobs:
           npm test
 
   deploy_to_ec2:
-    needs: build_and_test      # or whatever your last job is called
+    needs: build_and_test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -36,7 +36,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          strictHostKeyChecking: 'no'
+          port: 22
+          timeout: 30s
+          args: -o StrictHostKeyChecking=no
           script: |
             cd /home/ec2-user/petadex.io/backend
 
@@ -53,4 +55,3 @@ jobs:
             # Start fresh
             pm2 start src/index.js --name petadex-backend
             pm2 save
-
