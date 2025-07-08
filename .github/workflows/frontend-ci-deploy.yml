@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages-deploy"
+  group: "frontend-deploy"
   cancel-in-progress: false
 
 defaults:
@@ -36,7 +36,7 @@ jobs:
             echo "install=install"   >> $GITHUB_OUTPUT
           elif [ -f package-lock.json ]; then
             echo "manager=npm"  >> $GITHUB_OUTPUT
-            echo "install=ci"   >> $GITHUB_OUTPUT
+            echo "install=install"   >> $GITHUB_OUTPUT
           else
             echo "Unable to detect package manager in frontend/" >&2
             exit 1
@@ -47,10 +47,9 @@ jobs:
         with:
           node-version: "20"
           cache: ${{ steps.detect-pm.outputs.manager }}
-          # point at the lockfile inside frontend/
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Configure Pages (Gatsby)
+      - name: Configure Pages for Gatsby
         id: pages-setup
         uses: actions/configure-pages@v5
         with:
@@ -72,6 +71,7 @@ jobs:
 
       - name: Build Gatsby site
         working-directory: frontend
+        # inject the production API URL so code fetches from your EC2 backend
         env:
           GATSBY_API_URL: ${{ secrets.GATSBY_API_URL }}
         run: ${{ steps.detect-pm.outputs.manager }} run build
@@ -88,12 +88,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
       - name: Success message
-        run: echo "Your frontend is now live at ${{ steps.deployment.outputs.page_url }}"
-
+        run: echo "Frontend is now live at ${{ steps.deployment.outputs.page_url }}"
