@@ -36,10 +36,21 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          # known_hosts: ${{ secrets.EC2_KNOWN_HOSTS }}  # uncomment if you added it
+          strictHostKeyChecking: 'no'
           script: |
             cd /home/ec2-user/petadex.io/backend
+
+            # Clean up old process & free port
+            pm2 stop petadex-backend || true
+            pm2 delete petadex-backend || true
+            sudo lsof -i TCP:3001 -t | xargs -r sudo kill -9
+
+            # Pull latest code & rebuild
             git fetch --all
             git reset --hard origin/main
             npm ci --only=production
-            pm2 restart petadex-backend
+
+            # Start fresh
+            pm2 start src/index.js --name petadex-backend
+            pm2 save
+
