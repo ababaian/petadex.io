@@ -1,18 +1,15 @@
 name: Deploy Gatsby Frontend to Pages
 
-# Trigger on pushes to main or manual dispatch
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
 
-# Grant only the permissions we need for Pages
 permissions:
-  contents: read          # we only need to read the repo
-  pages: write            # to push to GitHub Pages
-  id-token: write         # for OIDC-ish authentication if needed
+  contents: read
+  pages: write
+  id-token: write
 
-# Prevent concurrent builds from stepping on each other
 concurrency:
   group: "pages-deploy"
   cancel-in-progress: false
@@ -45,11 +42,13 @@ jobs:
             exit 1
           fi
 
-      - name: Setup Node.js
+      - name: Setup Node.js & cache dependencies
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: ${{ steps.detect-pm.outputs.manager }}
+          # point at the lockfile inside frontend/
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Configure Pages (Gatsby)
         id: pages-setup
@@ -74,7 +73,6 @@ jobs:
       - name: Build Gatsby site
         working-directory: frontend
         env:
-          # Point Gatsby at the correct API in prod; adjust if needed
           GATSBY_API_URL: ${{ secrets.GATSBY_API_URL }}
         run: ${{ steps.detect-pm.outputs.manager }} run build
 
@@ -97,5 +95,5 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Success message
-        run: |
-          echo "Your frontend is now live at ${{ steps.deployment.outputs.page_url }}"
+        run: echo "Your frontend is now live at ${{ steps.deployment.outputs.page_url }}"
+
