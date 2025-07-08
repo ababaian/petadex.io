@@ -1,21 +1,39 @@
+// File: frontend/src/components/SequenceViewer.js
 import React from "react";
 
-// Taylor amino acid color scheme
+// Taylor amino acid color scheme (background colors)
 const aaColors = {
-  A: "#C8C8C8", C: "#E6E600", D: "#E60000", E: "#E60000",
-  F: "#3232AA", G: "#EBEBEB", H: "#8282D2", I: "#0F820F",
-  K: "#0000E0", L: "#0F820F", M: "#0F820F", N: "#00DCDC",
-  P: "#7F007F", Q: "#00DCDC", R: "#0000E0", S: "#FA9600",
-  T: "#FA9600", V: "#0F820F", W: "#B45AB4", Y: "#3232AA"
+  A: "#ccff00", V: "#99ff00", I: "#66ff00", L: "#33ff00",
+  M: "#00ff00", F: "#00ff66", Y: "#00ffcc", W: "#00ccff",
+  H: "#0066ff", R: "#0000ff", K: "#6600ff", N: "#cc00ff",
+  Q: "#ff00cc", E: "#ff0066", D: "#ff0000", S: "#ff3300",
+  T: "#ff6600", G: "#ff9900", P: "#ffcc00", C: "#ffff00"
+};
+
+// Wrap sequence into lines of up to `lineLength` characters
+const wrapSequence = (seq, lineLength = 80) => {
+  return seq.match(new RegExp(`.{1,${lineLength}}`, "g")) || [];
 };
 
 export default function SequenceViewer({ sequence }) {
+  const lines = wrapSequence(sequence, 80);
   return (
     <div style={{ fontFamily: "monospace", fontSize: "1rem", lineHeight: "1.5" }}>
-      {sequence.split("").map((aa, i) => (
-        <span key={i} style={{ color: aaColors[aa] || "#000000" }}>
-          {aa}
-        </span>
+      {lines.map((line, idx) => (
+        <div key={idx} style={{ whiteSpace: "pre" }}>
+          {line.split("").map((aa, i) => (
+            <span
+              key={i}
+              style={{
+                backgroundColor: aaColors[aa] || "#FFFFFF",
+                color: "#000000",
+                padding: "0 2px"
+              }}
+            >
+              {aa}
+            </span>
+          ))}
+        </div>
       ))}
     </div>
   );
