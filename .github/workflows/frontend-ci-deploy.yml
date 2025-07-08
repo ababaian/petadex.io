@@ -1,0 +1,101 @@
+name: Deploy Gatsby Frontend to Pages
+
+# Trigger on pushes to main or manual dispatch
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+# Grant only the permissions we need for Pages
+permissions:
+  contents: read          # we only need to read the repo
+  pages: write            # to push to GitHub Pages
+  id-token: write         # for OIDC-ish authentication if needed
+
+# Prevent concurrent builds from stepping on each other
+concurrency:
+  group: "pages-deploy"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: 🏗 Build Gatsby site
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine package manager in frontend/
+        id: detect-pm
+        run: |
+          cd frontend
+          if [ -f yarn.lock ]; then
+            echo "manager=yarn" >> $GITHUB_OUTPUT
+            echo "install=install"   >> $GITHUB_OUTPUT
+          elif [ -f package-lock.json ]; then
+            echo "manager=npm"  >> $GITHUB_OUTPUT
+            echo "install=ci"   >> $GITHUB_OUTPUT
+          else
+            echo "Unable to detect package manager in frontend/" >&2
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: ${{ steps.detect-pm.outputs.manager }}
+
+      - name: Configure Pages (Gatsby)
+        id: pages-setup
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: gatsby
+
+      - name: Restore Gatsby cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            frontend/.cache
+            frontend/public
+          key: ${{ runner.os }}-gatsby-${{ steps.detect-pm.outputs.manager }}-build-${{ hashFiles('frontend/**/package-lock.json', 'frontend/**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gatsby-
+
+      - name: Install dependencies in frontend/
+        working-directory: frontend
+        run: ${{ steps.detect-pm.outputs.manager }} ${{ steps.detect-pm.outputs.install }}
+
+      - name: Build Gatsby site
+        working-directory: frontend
+        env:
+          # Point Gatsby at the correct API in prod; adjust if needed
+          GATSBY_API_URL: ${{ secrets.GATSBY_API_URL }}
+        run: ${{ steps.detect-pm.outputs.manager }} run build
+
+      - name: Upload generated site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/public
+
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Success message
+        run: |
+          echo "Your frontend is now live at ${{ steps.deployment.outputs.page_url }}"
