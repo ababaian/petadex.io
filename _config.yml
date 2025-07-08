@@ -3,3 +3,4 @@ description: "PETadex: Plastic Enzyme Index"
 theme: "jekyll-theme-minimal"
 exclude:
   - backend
+  - frontend
