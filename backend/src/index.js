@@ -2,6 +2,7 @@ import express from 'express';
 import fastaaRoutes from './routes/fastaa.js';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
+import 'dotenv/config';
 
 const app = express();
 const port = process.env.PORT || 3001;
