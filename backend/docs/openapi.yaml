@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Petadex Pilot API
+  version: 1.0.0
+paths:
+  /api/fastaa:
+    get:
+      summary: List all fastaa sequences
+      responses:
+        '200':
+          description: Array of sequences
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Fastaa'
+  /api/fastaa/{accession}:
+    get:
+      summary: Get a single fastaa sequence
+      parameters:
+        - name: accession
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 64
+      responses:
+        '200':
+          description: A single sequence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fastaa'
+        '404':
+          description: Not found
+components:
+  schemas:
+    Fastaa:
+      type: object
+      properties:
+        accession:
+          type: string
+        sequence:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - accession
+        - sequence
+        - created_at
+
