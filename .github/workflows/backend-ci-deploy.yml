@@ -23,20 +23,23 @@ jobs:
           cd backend
           npm test
 
-  deploy:
-    needs: build_and_test
+  deploy_to_ec2:
+    needs: build_and_test      # or whatever your last job is called
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.6
         with:
-          service: petadex-backend-service
-          cluster: petadex-cluster
-          # …other ECS params…
-        env:
-          AWS_REGION: us-east-1
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASS: ${{ secrets.DB_PASS }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          # known_hosts: ${{ secrets.EC2_KNOWN_HOSTS }}  # uncomment if you added it
+          script: |
+            cd /home/ec2-user/petadex.io/backend
+            git fetch --all
+            git reset --hard origin/main
+            npm ci --only=production
+            pm2 restart petadex-backend
