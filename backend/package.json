@@ -1,20 +1,24 @@
 {
-  "name": "backend",
+  "name": "petadex-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Express API for Petadex fastaa table",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"No test specified\" && exit 0"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "local": "node src/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "dotenv": "^17.1.0",
-    "express": "^5.1.0",
-    "joi": "^17.13.3",
-    "pg": "^8.16.3",
-    "swagger-ui-express": "^5.0.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.18.2",
+    "joi": "^17.9.2",
+    "pg": "^8.10.0",
+    "serverless-http": "^3.0.0",
+    "swagger-ui-express": "^4.6.2",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }

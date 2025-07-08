@@ -1,0 +1,29 @@
+service: petadex-backend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    DB_HOST: ${env:DB_HOST}
+    DB_USER: ${env:DB_USER}
+    DB_PASS: ${env:DB_PASS}
+    DB_NAME: ${env:DB_NAME}
+  vpc:
+    securityGroupIds:
+      - sg-05566dc054d55ac83   
+    subnetIds:
+      - subnet-0a9f6e8de6432e5d6
+      - subnet-0f9c86f70806c421a
+
+functions:
+  api:
+    handler: src/handler.handler
+    events:
+      - httpApi:
+          path: /api/fastaa
+          method: get
+      - httpApi:
+          path: /api/fastaa/{accession}
+          method: get
+
