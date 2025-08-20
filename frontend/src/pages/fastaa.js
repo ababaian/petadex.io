@@ -47,7 +47,7 @@ const FastaaPage = () => {
               {seq.sequence}
             </pre>
             <small>
-              Created at: {new Date(seq.created_at).toLocaleString()}
+              Created at: {new Date(seq.date_entered).toLocaleString()}
             </small>
           </li>
         ))}
