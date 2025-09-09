@@ -67,10 +67,9 @@ jobs:
           
           # Add header
           sed -i '7i### FASTAA Table\n\n| Column | Type | Nullable | Default |\n|--------|------|----------|---------|' docs/database/generated-schema.md
-          
-      - name: Commit generated documentation
-        uses: EndBug/add-and-commit@v9
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
         with:
-          message: 'Update database schema documentation'
-          add: 'docs/database/generated-schema.md'
-          default_author: github_actions
+          name: database-documentation
+          path: docs/database/generated-schema.md
