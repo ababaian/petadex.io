@@ -1,47 +1,15 @@
-name: Generate Database Documentation
+name: Generate DB Documentation
 
 on:
-  pull_request:
-    paths:
-      - 'backend/sql/**'
-      - 'backend/src/routes/**'
-      - 'backend/src/db.js'
   workflow_dispatch:
 
 jobs:
-  document-database:
+  generate-schema-doc:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: petadex
-          POSTGRES_PASSWORD: dev_password  
-          POSTGRES_DB: petadex_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Wait for PostgreSQL
-        run: |
-          until pg_isready -h localhost -p 5432 -U petadex; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-          
-      - name: Setup database schema
-        run: |
-          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -f backend/sql/schema.sql
-          
       - name: Generate simple schema documentation
         run: |
           echo "# Petadex Database Schema" > docs/database/generated-schema.md
@@ -51,25 +19,28 @@ jobs:
           echo "## Tables" >> docs/database/generated-schema.md
           echo "" >> docs/database/generated-schema.md
           
-          # Get table info
-          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -c "
-          SELECT 
-            '| ' || column_name || ' | ' || data_type || 
-            CASE WHEN character_maximum_length IS NOT NULL 
-                 THEN '(' || character_maximum_length || ')' 
-                 ELSE '' END || ' | ' ||
-            CASE WHEN is_nullable = 'YES' THEN 'Yes' ELSE 'No' END || ' | ' ||
-            COALESCE(column_default, '') || ' |'
-          FROM information_schema.columns 
-          WHERE table_name = 'fastaa' 
-          ORDER BY ordinal_position;
-          " -t >> docs/database/generated-schema.md
+          # Get list of all tables
+          TABLES=$(PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -t -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
           
-          # Add header
-          sed -i '7i### FASTAA Table\n\n| Column | Type | Nullable | Default |\n|--------|------|----------|---------|' docs/database/generated-schema.md
-
-      - name: Upload documentation artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: database-documentation
-          path: docs/database/generated-schema.md
+          # Generate documentation for each table
+          for table in $TABLES; do
+            echo "### $(echo $table | tr '[:lower:]' '[:upper:]') Table" >> docs/database/generated-schema.md
+            echo "" >> docs/database/generated-schema.md
+            echo "| Column | Type | Nullable | Default |" >> docs/database/generated-schema.md
+            echo "|--------|------|----------|---------|" >> docs/database/generated-schema.md
+            
+            PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -c "
+            SELECT 
+              '| ' || column_name || ' | ' || data_type || 
+              CASE WHEN character_maximum_length IS NOT NULL 
+                   THEN '(' || character_maximum_length || ')' 
+                   ELSE '' END || ' | ' ||
+              CASE WHEN is_nullable = 'YES' THEN 'Yes' ELSE 'No' END || ' | ' ||
+              COALESCE(column_default, '') || ' |'
+            FROM information_schema.columns 
+            WHERE table_name = '"$table"' 
+            ORDER BY ordinal_position;
+            " -t >> docs/database/generated-schema.md
+            
+            echo "" >> docs/database/generated-schema.md
+          done
