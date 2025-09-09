@@ -1,3 +1,5 @@
+name: Generate Database Documentation
+
 on:
   pull_request:
     paths:
@@ -28,10 +30,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -p 5432 -U petadex; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
           
       - name: Setup database schema
         run: |
           PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -f backend/sql/schema.sql
+          
+      - name: Verify table exists
+        run: |
+          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -c "\dt"
           
       - name: Generate database schema documentation
         uses: gps/document-postgres-schema@master
@@ -47,6 +61,6 @@ jobs:
       - name: Commit generated documentation
         uses: EndBug/add-and-commit@v9
         with:
-          message: '📚 Auto-update database schema documentation'
+          message: 'Auto-update database schema documentation'
           add: 'docs/database/generated-schema.md'
           default_author: github_actions
