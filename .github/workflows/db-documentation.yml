@@ -1,34 +1,46 @@
 name: Generate Database Documentation
-
 on:
   workflow_dispatch:
-
+    inputs:
+      db_host:
+        description: 'Database Host'
+        required: true
+        type: string
+      db_port:
+        description: 'Database Port'
+        required: true
+        type: string
+        default: '5432'
+      db_name:
+        description: 'Database Name'
+        required: true
+        type: string
+      db_user:
+        description: 'Database User'
+        required: true
+        type: string
+      db_password:
+        description: 'Database Password'
+        required: true
+        type: string
 jobs:
   generate-docs:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Install PostgreSQL client
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
-
-      - name: Load environment variables and generate documentation
+      - name: Generate database documentation
+        env:
+          DB_HOST: ${{ github.event.inputs.db_host }}
+          DB_PORT: ${{ github.event.inputs.db_port }}
+          DB_NAME: ${{ github.event.inputs.db_name }}
+          DB_USER: ${{ github.event.inputs.db_user }}
+          DB_PASS: ${{ github.event.inputs.db_password }}
         run: |
-          # Source the .env file to load variables
-          if [ -f backend/.env ]; then
-            set -a  # automatically export all variables
-            source backend/.env
-            set +a  # stop automatically exporting
-            echo "Loaded environment variables from backend/.env"
-          else
-            echo "Error: backend/.env file not found"
-            exit 1
-          fi
-          
           mkdir -p docs/database
           echo "# Petadex Database Schema" > docs/database/generated-schema.md
           echo "" >> docs/database/generated-schema.md
@@ -73,7 +85,6 @@ jobs:
             
             echo "" >> docs/database/generated-schema.md
           done
-
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v4
         with:
