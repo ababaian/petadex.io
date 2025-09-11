@@ -6,9 +6,36 @@ on:
 jobs:
   generate-docs:
     runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: petadex
+          POSTGRES_PASSWORD: dev_password  
+          POSTGRES_DB: petadex_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U petadex; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          
+      - name: Setup database schema
+        run: |
+          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -f backend/sql/schema.sql
 
       - name: Generate simple schema documentation
         run: |
@@ -51,3 +78,9 @@ jobs:
             
             echo "" >> docs/database/generated-schema.md
           done
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-documentation
+          path: docs/database/generated-schema.md
