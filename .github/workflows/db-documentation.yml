@@ -6,58 +6,41 @@ on:
 jobs:
   generate-docs:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: petadex
-          POSTGRES_PASSWORD: dev_password  
-          POSTGRES_DB: petadex_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Wait for PostgreSQL
+      - name: Install PostgreSQL client
         run: |
-          until pg_isready -h localhost -p 5432 -U petadex; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-          
-      - name: Setup database schema
-        run: |
-          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -f backend/sql/schema.sql
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
-      - name: Generate simple schema documentation
+      - name: Load environment variables and generate documentation
         run: |
+          # Source the .env file to load variables
+          if [ -f backend/.env ]; then
+            set -a  # automatically export all variables
+            source backend/.env
+            set +a  # stop automatically exporting
+            echo "Loaded environment variables from backend/.env"
+          else
+            echo "Error: backend/.env file not found"
+            exit 1
+          fi
+          
           mkdir -p docs/database
           echo "# Petadex Database Schema" > docs/database/generated-schema.md
           echo "" >> docs/database/generated-schema.md
           echo "Auto-generated on $(date)" >> docs/database/generated-schema.md
           echo "" >> docs/database/generated-schema.md
+          echo "Connected to: $DB_HOST:$DB_PORT/$DB_NAME" >> docs/database/generated-schema.md
+          echo "" >> docs/database/generated-schema.md
           echo "## Tables" >> docs/database/generated-schema.md
           echo "" >> docs/database/generated-schema.md
           
-          # Get all table names and debug
-          echo "=== DEBUG: Checking for tables ==="
-          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -c "
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            AND table_type = 'BASE TABLE'
-            ORDER BY table_name;
-          "
-          
-          TABLES=$(PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -t -c "
+          # Get all table names
+          TABLES=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -t -c "
             SELECT table_name 
             FROM information_schema.tables 
             WHERE table_schema = 'public' 
@@ -66,7 +49,6 @@ jobs:
           " | tr -d ' ')
           
           echo "=== DEBUG: Found tables: $TABLES ==="
-          echo "=== DEBUG: Number of tables found: $(echo $TABLES | wc -w) ==="
           
           # Generate documentation for each table
           for table in $TABLES; do
@@ -76,7 +58,7 @@ jobs:
             echo "| Column | Type | Nullable | Default |" >> docs/database/generated-schema.md
             echo "|--------|------|----------|---------|" >> docs/database/generated-schema.md
             
-            PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -t -c "
+            PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -t -c "
             SELECT 
               '| ' || column_name || ' | ' || data_type || 
               CASE WHEN character_maximum_length IS NOT NULL 
