@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS fastaa (
     accession character varying(32) NOT NULL,
     sequence character varying,
     source character varying,
+    test_bug character varying,
     date_entered timestamp with time zone DEFAULT now()
 );
 
