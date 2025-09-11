@@ -1,66 +1,53 @@
 name: Generate Database Documentation
 
 on:
-  pull_request:
-    paths:
-      - 'backend/sql/**'
-      - 'backend/src/routes/**'
-      - 'backend/src/db.js'
   workflow_dispatch:
 
 jobs:
-  document-database:
+  generate-docs:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: petadex
-          POSTGRES_PASSWORD: dev_password  
-          POSTGRES_DB: petadex_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Wait for PostgreSQL to be ready
+      - name: Generate simple schema documentation
         run: |
-          until pg_isready -h localhost -p 5432 -U petadex; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
+          mkdir -p docs/database
+          echo "# Petadex Database Schema" > docs/database/generated-schema.md
+          echo "" >> docs/database/generated-schema.md
+          echo "Auto-generated on $(date)" >> docs/database/generated-schema.md
+          echo "" >> docs/database/generated-schema.md
+          echo "## Tables" >> docs/database/generated-schema.md
+          echo "" >> docs/database/generated-schema.md
+          
+          # Get all table names
+          TABLES=$(PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -t -c "
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_type = 'BASE TABLE'
+            ORDER BY table_name;
+          " | tr -d ' ')
+          
+          # Generate documentation for each table
+          for table in $TABLES; do
+            echo "### ${table^^} Table" >> docs/database/generated-schema.md
+            echo "" >> docs/database/generated-schema.md
+            echo "| Column | Type | Nullable | Default |" >> docs/database/generated-schema.md
+            echo "|--------|------|----------|---------|" >> docs/database/generated-schema.md
+            
+            PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -t -c "
+            SELECT 
+              '| ' || column_name || ' | ' || data_type || 
+              CASE WHEN character_maximum_length IS NOT NULL 
+                   THEN '(' || character_maximum_length || ')' 
+                   ELSE '' END || ' | ' ||
+              CASE WHEN is_nullable = 'YES' THEN 'Yes' ELSE 'No' END || ' | ' ||
+              COALESCE(column_default, '') || ' |'
+            FROM information_schema.columns 
+            WHERE table_name = '$table' 
+            ORDER BY ordinal_position;
+            " >> docs/database/generated-schema.md
+            
+            echo "" >> docs/database/generated-schema.md
           done
-          echo "PostgreSQL is ready!"
-          
-      - name: Setup database schema
-        run: |
-          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -f backend/sql/schema.sql
-          
-      - name: Verify table exists
-        run: |
-          PGPASSWORD=dev_password psql -h localhost -U petadex -d petadex_db -c "\dt"
-          
-      - name: Generate database schema documentation
-        uses: gps/document-postgres-schema@master
-        with:
-          PATH_TO_DB_SCHEMA_FILE: "docs/database/schema-template.md"
-          PATH_TO_GENERATED_DB_SCHEMA_FILE: "docs/database/generated-schema.md"
-          DATABASE_USER_NAME: "petadex"
-          DATABASE_PASSWORD: "dev_password"
-          DATABASE_HOST: "localhost"
-          DATABASE_PORT: 5432
-          DATABASE_NAME: "petadex_db"
-          
-      - name: Commit generated documentation
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: 'Auto-update database schema documentation'
-          add: 'docs/database/generated-schema.md'
-          default_author: github_actions
