@@ -1,4 +1,4 @@
-## PETadex.io
+## PETadex.io [Under construction]
 
 PETadex.io is an open‑source platform for exploring plastic‑degrading enzymes. The repository has two‑tiers
 
