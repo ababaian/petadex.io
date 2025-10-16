@@ -10,7 +10,7 @@ const schema = Joi.string().max(64).required();
 router.get('/', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT accession, sequence, source, date_entered FROM fastaa ORDER BY date_entered DESC'
+      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered FROM fastaa ORDER BY accession ASC'
     );
     res.json(rows);
   } catch (err) {
@@ -20,17 +20,23 @@ router.get('/', async (req, res, next) => {
 
 // GET by accession
 router.get('/:accession', async (req, res, next) => {
+  console.log('API request received for accession:', req.params.accession);
   const { error, value } = schema.validate(req.params.accession);
-  if (error) return res.status(400).json({ error: error.message });
+  if (error) {
+    console.log('Validation error:', error.message);
+    return res.status(400).json({ error: error.message });
+  }
 
   try {
     const { rows } = await pool.query(
-      'SELECT accession, sequence, source, date_entered FROM fastaa WHERE accession = $1',
+      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered FROM fastaa WHERE accession = $1',
       [value]
     );
+    console.log('Query result:', rows.length ? 'Found' : 'Not found');
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {
+    console.error('Database error:', err);
     next(err);
   }
 });
