@@ -10,15 +10,9 @@ export default function HomePage() {
       </p>
       <nav>
         <ul style={{ listStyle: "none", padding: 0 }}>
-          
-          <li>
-            <Link to="/protein" style={{ textDecoration: "none", color: "#0366d6", fontSize: "1.5rem" }}>
-              PETadex Search
-            </Link>
-          </li>
           <li style={{ marginBottom: "1rem" }}>
             <Link to="/fastaa" style={{ textDecoration: "none", color: "#0366d6", fontSize: "1.5rem" }}>
-              View All Sequences
+              Let's get started!
             </Link>
           </li>
         </ul>
