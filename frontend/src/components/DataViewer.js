@@ -1,3 +1,4 @@
+// frontend/src/components/DataViewer.js
 import React, { useState } from "react";
 import SequencePanel from "./SequencePanel";
 import StructurePanel from "./StructurePanel";
@@ -15,13 +16,13 @@ export default function DataViewer({ sequence, accession, metadata }) {
   const renderPanel = () => {
     switch (activeTab) {
       case "sequence":
-        return <SequencePanel sequence={sequence} />;
+        return <SequencePanel sequence={sequence} accession={accession} />;
       case "structure":
         return <StructurePanel accession={accession} />;
       case "metadata":
         return <MetadataPanel metadata={metadata} />;
       default:
-        return <SequencePanel sequence={sequence} />;
+        return <SequencePanel sequence={sequence} accession={accession} />;
     }
   };
 

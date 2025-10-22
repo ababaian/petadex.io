@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 
 import fastaaRoutes from './routes/fastaa.js';
+import aaSeqFeaturesRoutes from './routes/aaSeqFeatures.js';
 import { pool } from './db.js';
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(cors());
 
 app.use(express.json());
 app.use('/api/fastaa', fastaaRoutes);
+app.use('/api/aa-seq-features', aaSeqFeaturesRoutes);
 
 // (Optional) health check route
 app.get('/health', async (req, res) => {
