@@ -22,6 +22,7 @@ petadex.io/
 
 #### frontend → http://localhost:8000
 ```
+ <!-- Do the following in new terminal  -->
  cd ../frontend && npm ci
  npm run develop
 ```

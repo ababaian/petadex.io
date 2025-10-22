@@ -12,12 +12,7 @@ export default function HomePage() {
         <ul style={{ listStyle: "none", padding: 0 }}>
           <li style={{ marginBottom: "1rem" }}>
             <Link to="/fastaa" style={{ textDecoration: "none", color: "#0366d6", fontSize: "1.5rem" }}>
-              View All Sequences
-            </Link>
-          </li>
-          <li>
-            <Link to="/protein" style={{ textDecoration: "none", color: "#0366d6", fontSize: "1.5rem" }}>
-              Protein Lookup
+              Let's get started!
             </Link>
           </li>
         </ul>
