@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import SequenceViewer from "../components/SequenceViewer";
+import DataViewer from "../components/DataViewer";
 
 export default function SequenceTemplate({ pageContext }) {
   const [sequence, setSequence] = useState(pageContext.sequence || null);
@@ -89,42 +89,19 @@ export default function SequenceTemplate({ pageContext }) {
           marginBottom: "0.5rem",
           color: "#2c3e50"
         }}>{sequence.accession}</h1>
+        <p style={{
+          color: "#6b7280",
+          fontSize: "1rem"
+        }}>
+          Plastic-degrading enzyme sequence
+        </p>
       </header>
 
-      <div style={{
-        backgroundColor: "white",
-        padding: "1.5rem",
-        borderRadius: "8px",
-        boxShadow: "0 1px 3px 0 rgba(0,0,0,0.1)"
-      }}>
-        <SequenceViewer 
-          aminoAcidSequence={sequence.sequence}
-          nucleotideSequence={null}
-        />
-      </div>
-
-      <div style={{ 
-        marginTop: "2rem", 
-        color: "#666",
-        backgroundColor: "white",
-        padding: "1.5rem",
-        borderRadius: "8px",
-        boxShadow: "0 1px 3px 0 rgba(0,0,0,0.1)"
-      }}>
-        <p style={{ margin: "0.5rem 0" }}>
-          <strong>Source:</strong> {sequence.source || 'Not specified'}
-        </p>
-        {sequence.synonyms && (
-          <p style={{ margin: "0.5rem 0" }}>
-            <strong>Synonyms:</strong> {sequence.synonyms}
-          </p>
-        )}
-        {sequence.date_entered && (
-          <p style={{ margin: "0.5rem 0", fontSize: "0.9rem" }}>
-            Added: {new Date(sequence.date_entered).toLocaleString()}
-          </p>
-        )}
-      </div>
+      <DataViewer 
+        sequence={sequence.sequence}
+        accession={sequence.accession}
+        metadata={sequence}
+      />
 
       <footer style={{
         marginTop: "3rem",
