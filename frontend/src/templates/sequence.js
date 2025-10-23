@@ -1,3 +1,4 @@
+// frontend/src/templates/sequence.js
 import React, { useState, useEffect } from "react";
 import DataViewer from "../components/DataViewer";
 import GeneMetadataViewer from "../components/GeneMetadataViewer";
@@ -5,6 +6,7 @@ import GeneMetadataViewer from "../components/GeneMetadataViewer";
 export default function SequenceTemplate({ pageContext }) {
   const [sequence, setSequence] = useState(pageContext.sequence || null);
   const [geneMetadata, setGeneMetadata] = useState([]);
+  const [headerData, setHeaderData] = useState(null);
   const [loading, setLoading] = useState(!pageContext.sequence);
   const [error, setError] = useState(null);
 
@@ -43,28 +45,34 @@ export default function SequenceTemplate({ pageContext }) {
     fetchSequence();
   }, [pageContext.sequence]);
 
-  // Fetch gene metadata based on accession
+  // Fetch gene metadata and header data
   useEffect(() => {
     if (!sequence?.accession) return;
 
     const apiBase = process.env.GATSBY_API_URL;
+    const accession = sequence.accession;
 
-    async function fetchGeneMetadata() {
+    async function fetchData() {
       try {
-        const res = await fetch(`${apiBase}/gene-metadata/by-accession/${sequence.accession}`);
-        if (res.ok) {
-          const data = await res.json();
-          // Handle both single object and array responses
+        // Fetch gene metadata (existing)
+        const metadataRes = await fetch(`${apiBase}/gene-metadata/by-accession/${accession}`);
+        if (metadataRes.ok) {
+          const data = await metadataRes.json();
           setGeneMetadata(Array.isArray(data) ? data : [data]);
         }
-        // If 404, that's fine - not all sequences have gene metadata
+
+        // Fetch header data for quick stats
+        const headerRes = await fetch(`${apiBase}/gene-details/${accession}/header`);
+        if (headerRes.ok) {
+          const data = await headerRes.json();
+          setHeaderData(data);
+        }
       } catch (err) {
-        console.error('Error fetching gene metadata:', err);
-        // Don't set error state, just log it
+        console.error('Error fetching data:', err);
       }
     }
 
-    fetchGeneMetadata();
+    fetchData();
   }, [sequence?.accession]);
 
   if (loading) {
@@ -129,9 +137,27 @@ export default function SequenceTemplate({ pageContext }) {
           </a>
         </h1>
         
+        {headerData && (
+          <div style={{
+            display: "flex",
+            gap: "1.5rem",
+            color: "#6b7280",
+            fontSize: "0.95rem",
+            marginTop: "1rem"
+          }}>
+            {headerData.origin_country && (
+              <span>Origin: <strong>{headerData.origin_country}</strong></span>
+            )}
+            {headerData.temperature && (
+              <span>Temperature: <strong>{headerData.temperature}°C</strong></span>
+            )}
+          </div>
+        )}
+        
         <p style={{
           color: "#6b7280",
-          fontSize: "1rem"
+          fontSize: "1rem",
+          marginTop: "0.5rem"
         }}>
           Plastic-degrading enzyme sequence
         </p>

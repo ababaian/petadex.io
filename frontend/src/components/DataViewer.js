@@ -20,7 +20,7 @@ export default function DataViewer({ sequence, accession, metadata }) {
       case "structure":
         return <StructurePanel accession={accession} />;
       case "metadata":
-        return <MetadataPanel metadata={metadata} />;
+        return <MetadataPanel metadata={metadata} accession={accession} />;
       default:
         return <SequencePanel sequence={sequence} accession={accession} />;
     }
