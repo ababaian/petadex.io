@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import DataViewer from "../components/DataViewer";
+import GeneMetadataViewer from "../components/GeneMetadataViewer";
 
 export default function SequenceTemplate({ pageContext }) {
   const [sequence, setSequence] = useState(pageContext.sequence || null);
+  const [geneMetadata, setGeneMetadata] = useState([]);
   const [loading, setLoading] = useState(!pageContext.sequence);
   const [error, setError] = useState(null);
 
@@ -40,6 +42,30 @@ export default function SequenceTemplate({ pageContext }) {
 
     fetchSequence();
   }, [pageContext.sequence]);
+
+  // Fetch gene metadata based on accession
+  useEffect(() => {
+    if (!sequence?.accession) return;
+
+    const apiBase = process.env.GATSBY_API_URL;
+
+    async function fetchGeneMetadata() {
+      try {
+        const res = await fetch(`${apiBase}/gene-metadata/by-accession/${sequence.accession}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Handle both single object and array responses
+          setGeneMetadata(Array.isArray(data) ? data : [data]);
+        }
+        // If 404, that's fine - not all sequences have gene metadata
+      } catch (err) {
+        console.error('Error fetching gene metadata:', err);
+        // Don't set error state, just log it
+      }
+    }
+
+    fetchGeneMetadata();
+  }, [sequence?.accession]);
 
   if (loading) {
     return (
@@ -88,7 +114,21 @@ export default function SequenceTemplate({ pageContext }) {
           fontSize: "2.5rem",
           marginBottom: "0.5rem",
           color: "#2c3e50"
-        }}>{sequence.accession}</h1>
+        }}>
+          <a 
+            href={`https://www.ncbi.nlm.nih.gov/protein/${sequence.accession}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#2c3e50",
+              textDecoration: "none",
+              borderBottom: "2px solid #3b82f6"
+            }}
+          >
+            {sequence.accession}
+          </a>
+        </h1>
+        
         <p style={{
           color: "#6b7280",
           fontSize: "1rem"
@@ -96,6 +136,8 @@ export default function SequenceTemplate({ pageContext }) {
           Plastic-degrading enzyme sequence
         </p>
       </header>
+
+      <GeneMetadataViewer geneMetadata={geneMetadata} />
 
       <DataViewer 
         sequence={sequence.sequence}
