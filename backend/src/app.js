@@ -8,6 +8,7 @@ import YAML from 'yamljs';
 import fastaaRoutes from './routes/fastaa.js';
 import aaSeqFeaturesRoutes from './routes/aaSeqFeatures.js';
 import geneMetadataRoutes from './routes/geneMetadata.js';
+import plateDataRoutes from './routes/plateData.js';
 import { pool } from './db.js';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/fastaa', fastaaRoutes);
 app.use('/api/aa-seq-features', aaSeqFeaturesRoutes);
 app.use('/api/gene-metadata', geneMetadataRoutes);
+app.use('/api/plate-data', plateDataRoutes);
 
 // (Optional) health check route
 app.get('/health', async (req, res) => {
