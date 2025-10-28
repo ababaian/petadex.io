@@ -1,12 +1,15 @@
 // frontend/src/templates/sequence.js
 import React, { useState, useEffect } from "react";
 import DataViewer from "../components/DataViewer";
-import GeneMetadataViewer from "../components/GeneMetadataViewer";
+import SynthesizedGenePanel from "../components/SynthesizedGenePanel";
 
 export default function SequenceTemplate({ pageContext }) {
   const [sequence, setSequence] = useState(pageContext.sequence || null);
   const [geneMetadata, setGeneMetadata] = useState([]);
   const [headerData, setHeaderData] = useState(null);
+  const [plateData, setPlateData] = useState({});
+  const [summaryStats, setSummaryStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [loading, setLoading] = useState(!pageContext.sequence);
   const [error, setError] = useState(null);
 
@@ -74,6 +77,100 @@ export default function SequenceTemplate({ pageContext }) {
 
     fetchData();
   }, [sequence?.accession]);
+
+  // Fetch summary statistics
+  useEffect(() => {
+    if (!sequence?.accession) return;
+
+    const apiBase = process.env.GATSBY_API_URL;
+    const accession = sequence.accession;
+
+    async function fetchSummaryStats() {
+      try {
+        setStatsLoading(true);
+        const response = await fetch(`${apiBase}/aa-seq-features/${accession}`);
+        
+        if (!response.ok) {
+          throw new Error('Features not found');
+        }
+        
+        const data = await response.json();
+        
+        // Calculate statistics from the arrays
+        const calculatedStats = calculateStats(data);
+        setSummaryStats(calculatedStats);
+      } catch (err) {
+        console.error('Error fetching summary stats:', err);
+        setSummaryStats(null);
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+
+    fetchSummaryStats();
+  }, [sequence?.accession]);
+
+  // Fetch plate data when geneMetadata changes
+  useEffect(() => {
+    if (!geneMetadata || geneMetadata.length === 0) return;
+
+    const apiBase = process.env.GATSBY_API_URL;
+
+    async function fetchPlateData() {
+      const dataPromises = geneMetadata.map(async (gene) => {
+        if (!gene.gene) return null;
+        
+        try {
+          const res = await fetch(`${apiBase}/plate-data/gene/${gene.gene}/average`);
+          if (res.ok) {
+            const data = await res.json();
+            return { geneId: gene.gene, data };
+          }
+        } catch (err) {
+          console.error(`Error fetching plate data for ${gene.gene}:`, err);
+        }
+        return null;
+      });
+
+      const results = await Promise.all(dataPromises);
+      const dataMap = {};
+      results.forEach(result => {
+        if (result) {
+          dataMap[result.geneId] = result.data;
+        }
+      });
+      setPlateData(dataMap);
+    }
+
+    fetchPlateData();
+  }, [geneMetadata]);
+
+  const calculateStats = (data) => {
+    const { mass, pi, hpath, sequence_length } = data;
+    
+    // Total mass: sum of all residue masses
+    const totalMass = mass ? mass.reduce((sum, val) => sum + val, 0) : 0;
+    
+    // Average pI: mean of all pI values
+    const avgPI = pi && pi.length > 0 
+      ? pi.reduce((sum, val) => sum + val, 0) / pi.length 
+      : 0;
+    
+    // % Hydrophobic residues: count residues with hpath > threshold (e.g., 0.5)
+    const hydrophobicCount = hpath 
+      ? hpath.filter(val => val > 0.5).length 
+      : 0;
+    const percentHydrophobic = sequence_length > 0 
+      ? (hydrophobicCount / sequence_length) * 100 
+      : 0;
+
+    return {
+      totalMass: totalMass.toFixed(2),
+      avgPI: avgPI.toFixed(2),
+      percentHydrophobic: percentHydrophobic.toFixed(1),
+      sequenceLength: sequence_length
+    };
+  };
 
   if (loading) {
     return (
@@ -163,12 +260,17 @@ export default function SequenceTemplate({ pageContext }) {
         </p>
       </header>
 
-      <GeneMetadataViewer geneMetadata={geneMetadata} />
+      <SynthesizedGenePanel 
+        geneMetadata={geneMetadata} 
+        plateData={plateData}
+      />
 
       <DataViewer 
         sequence={sequence.sequence}
         accession={sequence.accession}
         metadata={sequence}
+        summaryStats={summaryStats}
+        statsLoading={statsLoading}
       />
 
       <footer style={{

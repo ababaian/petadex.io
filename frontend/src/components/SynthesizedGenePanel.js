@@ -1,44 +1,8 @@
-// src/components/GeneMetadataViewer.js
-import React, { useState, useEffect } from "react";
+// src/components/SynthesizedGenePanel.js
+import React, { useState } from "react";
 
-export default function GeneMetadataViewer({ geneMetadata }) {
+export default function SynthesizedGenePanel({ geneMetadata, plateData }) {
   const [expandedGenes, setExpandedGenes] = useState({});
-  const [plateData, setPlateData] = useState({});
-
-  useEffect(() => {
-    if (!geneMetadata || geneMetadata.length === 0) return;
-
-    const apiBase = process.env.GATSBY_API_URL;
-
-    // Fetch plate data for each gene
-    async function fetchPlateData() {
-      const dataPromises = geneMetadata.map(async (gene) => {
-        if (!gene.gene) return null;
-        
-        try {
-          const res = await fetch(`${apiBase}/plate-data/gene/${gene.gene}/average`);
-          if (res.ok) {
-            const data = await res.json();
-            return { geneId: gene.gene, data };
-          }
-        } catch (err) {
-          console.error(`Error fetching plate data for ${gene.gene}:`, err);
-        }
-        return null;
-      });
-
-      const results = await Promise.all(dataPromises);
-      const dataMap = {};
-      results.forEach(result => {
-        if (result) {
-          dataMap[result.geneId] = result.data;
-        }
-      });
-      setPlateData(dataMap);
-    }
-
-    fetchPlateData();
-  }, [geneMetadata]);
 
   if (!geneMetadata || geneMetadata.length === 0) {
     return null;
@@ -72,7 +36,7 @@ export default function GeneMetadataViewer({ geneMetadata }) {
       {geneMetadata.map((gene, index) => {
         const geneKey = gene.gene || `gene-${index}`;
         const isExpanded = expandedGenes[geneKey];
-        const genePlateData = plateData[geneKey];
+        const genePlateData = plateData?.[geneKey];
 
         return (
           <div 
