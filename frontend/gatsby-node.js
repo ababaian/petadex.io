@@ -12,8 +12,14 @@ exports.createPages = async ({ actions }) => {
 
   try {
     const apiUrl = process.env.GATSBY_API_URL || "http://localhost:3001/api";
-    const response = await fetch(`${apiUrl}/fastaa`);
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const response = await fetch(`${apiUrl}/fastaa`, {
+      signal: AbortSignal.timeout(5000) // 5 second timeout
+    });
+    
+    if (!response.ok) {
+      console.warn(`API returned status ${response.status}, skipping sequence page generation`);
+      return;
+    }
     
     const sequences = await response.json();
     
@@ -27,6 +33,8 @@ exports.createPages = async ({ actions }) => {
     
     console.log(`Created ${sequences.length} sequence pages`);
   } catch (error) {
-    console.error("Error creating sequence pages:", error);
+    console.warn("Error creating sequence pages (backend unavailable during build):", error.message);
+    console.log("Sequence pages will be skipped - data will be fetched client-side");
+    // Don't throw - allow build to continue without sequence pages
   }
 };
