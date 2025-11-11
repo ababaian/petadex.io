@@ -1,0 +1,46 @@
+Backend Project Directory Structure:
+├── docs
+│   └── openapi.yaml
+├── src
+│   ├── routes
+│   │   ├── aaSeqFeatures.js
+│   │   ├── fastaa.js
+│   │   ├── geneDetails.js
+│   │   ├── geneMetadata.js
+│   │   ├── pilot.js
+│   │   └── plateData.js
+│   ├── app.js
+│   ├── db.js
+│   ├── handler.js
+│   └── index.js
+├── package-lock.json
+├── package.json
+├── README.md
+└── serverless.yml
+
+Frontend Project Directory Structure:
+├── components
+│   ├── DataViewer.js
+│   ├── GeneMetadataViewer.js
+│   ├── header.js
+│   ├── index.module.css
+│   ├── layout.css
+│   ├── layout.js
+│   ├── MetadataPanel.js
+│   ├── OriginDiscoveryCard.js
+│   ├── ResearchContextPanel.js
+│   ├── seo.js
+│   ├── SequencePanel.js
+│   ├── SequenceViewer.js
+│   ├── StructurePanel.js
+│   └── SummaryStatistics.jsx
+├── images
+│   ├── example.png
+│   └── gatsby-icon.png
+├── pages
+│   ├── 404.js
+│   ├── fastaa.js
+│   └── index.js
+└── templates
+    ├── sequence.js
+    └── using-dsg.js

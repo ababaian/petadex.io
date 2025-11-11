@@ -47,7 +47,7 @@ jobs:
           username: ${{ github.event.inputs.ssh_user }}
           key: ${{ github.event.inputs.ssh_key }}
           port: 22
-          timeout: 60s
+          timeout: 30s
           script: |
             cd /home/ubuntu/petadex.io/petadex.io/backend
             pm2 stop petadex-backend || true

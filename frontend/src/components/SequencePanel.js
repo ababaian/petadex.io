@@ -1,9 +1,9 @@
-// frontend/src/components/SequencePanel.jsx
+// frontend/src/components/SequencePanel.js
 import React from "react";
 import SequenceViewer from "./SequenceViewer";
 import SummaryStatistics from "./SummaryStatistics";
 
-export default function SequencePanel({ sequence, accession }) {
+export default function SequencePanel({ sequence, accession, summaryStats, statsLoading }) {
   if (!sequence) {
     return (
       <div style={{ 
@@ -18,7 +18,10 @@ export default function SequencePanel({ sequence, accession }) {
 
   return (
     <div>
-      <SummaryStatistics accession={accession} />
+      <SummaryStatistics 
+        stats={summaryStats}
+        loading={statsLoading}
+      />
       
       <div style={{ 
         marginBottom: "1rem",

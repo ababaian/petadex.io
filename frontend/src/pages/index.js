@@ -6,7 +6,10 @@ export default function HomePage() {
     <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
       <h1 style={{ fontSize: "3rem", marginBottom: "1rem" }}>PETadex</h1>
       <p style={{ fontSize: "1.25rem", marginBottom: "2rem" }}>
-        Welcome to PETadex, your exploration of plastic-degrading enzyme sequences.
+        # TODO: Implement search function here
+      </p>
+      <p style={{ fontSize: "1.25rem", marginBottom: "2rem" }}>
+        Welcome to PETadex, your one-stop shop for the exploration of plastic-degrading enzyme sequences.
       </p>
       <nav>
         <ul style={{ listStyle: "none", padding: 0 }}>

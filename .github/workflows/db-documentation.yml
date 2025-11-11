@@ -122,6 +122,70 @@ jobs:
             
             echo "" >> docs/database/generated-schema.md
           done
+          
+          echo "## Materialized Views" >> docs/database/generated-schema.md
+          echo "" >> docs/database/generated-schema.md
+          
+          # Get all materialized view names
+          MATVIEWS=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -t -c "
+            SELECT matviewname 
+            FROM pg_matviews 
+            WHERE schemaname = 'public'
+            ORDER BY matviewname;
+          " | tr -d ' ')
+          
+          echo "=== DEBUG: Found materialized views: $MATVIEWS ==="
+          
+          # Generate documentation for each materialized view
+          for matview in $MATVIEWS; do
+            echo "=== DEBUG: Processing materialized view: $matview ==="
+            echo "### ${matview^^} Materialized View" >> docs/database/generated-schema.md
+            echo "" >> docs/database/generated-schema.md
+            
+            # Get materialized view comment/description
+            MATVIEW_COMMENT=$(PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -t -A -c "
+            SELECT COALESCE(
+              obj_description(c.oid, 'pg_class'),
+              'No description available'
+            )
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relname = '$matview'
+            AND n.nspname = 'public'
+            AND c.relkind = 'm';
+            " | tr -d '\n\r')
+            
+            echo "**Description:** $MATVIEW_COMMENT" >> docs/database/generated-schema.md
+            echo "" >> docs/database/generated-schema.md
+            
+            echo "| Column | Type | Nullable | Default | Comment |" >> docs/database/generated-schema.md
+            echo "|--------|------|----------|---------|---------|" >> docs/database/generated-schema.md
+            
+            # Get column information including comments
+            PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -t -c "
+            SELECT 
+              '| ' || a.attname || ' | ' || 
+              pg_catalog.format_type(a.atttypid, a.atttypmod) || ' | ' ||
+              CASE WHEN a.attnotnull THEN 'No' ELSE 'Yes' END || ' | ' ||
+              COALESCE(pg_get_expr(d.adbin, d.adrelid), '') || ' | ' ||
+              COALESCE(
+                col_description(c.oid, a.attnum),
+                ''
+              ) || ' |'
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            JOIN pg_attribute a ON a.attrelid = c.oid
+            LEFT JOIN pg_attrdef d ON d.adrelid = c.oid AND d.adnum = a.attnum
+            WHERE c.relname = '$matview'
+            AND n.nspname = 'public'
+            AND c.relkind = 'm'
+            AND a.attnum > 0
+            AND NOT a.attisdropped
+            ORDER BY a.attnum;
+            " >> docs/database/generated-schema.md
+            
+            echo "" >> docs/database/generated-schema.md
+          done
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v4
         with:

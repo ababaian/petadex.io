@@ -4,7 +4,7 @@ import SequencePanel from "./SequencePanel";
 import StructurePanel from "./StructurePanel";
 import MetadataPanel from "./MetadataPanel";
 
-export default function DataViewer({ sequence, accession, metadata }) {
+export default function DataViewer({ sequence, accession, metadata, summaryStats, statsLoading }) {
   const [activeTab, setActiveTab] = useState("sequence");
 
   const tabs = [
@@ -16,13 +16,27 @@ export default function DataViewer({ sequence, accession, metadata }) {
   const renderPanel = () => {
     switch (activeTab) {
       case "sequence":
-        return <SequencePanel sequence={sequence} accession={accession} />;
+        return (
+          <SequencePanel 
+            sequence={sequence} 
+            accession={accession}
+            summaryStats={summaryStats}
+            statsLoading={statsLoading}
+          />
+        );
       case "structure":
         return <StructurePanel accession={accession} />;
       case "metadata":
-        return <MetadataPanel metadata={metadata} />;
+        return <MetadataPanel metadata={metadata} accession={accession} />;
       default:
-        return <SequencePanel sequence={sequence} accession={accession} />;
+        return (
+          <SequencePanel 
+            sequence={sequence} 
+            accession={accession}
+            summaryStats={summaryStats}
+            statsLoading={statsLoading}
+          />
+        );
     }
   };
 
