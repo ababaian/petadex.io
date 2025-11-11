@@ -6,7 +6,7 @@ on:
         description: 'EC2 Host'
         required: true
         type: string
-        default: 'ec2-3-239-103-67.compute-1.amazonaws.com'
+        default: 'ec2-44-222-238-66.compute-1.amazonaws.com'
       ssh_user:
         description: 'SSH Username'
         required: true
