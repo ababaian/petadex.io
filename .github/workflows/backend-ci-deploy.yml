@@ -1,7 +1,6 @@
 name: Backend CI & Deploy
-
 on:
-  workflow_dispatch:  # Remove push trigger, only manual
+  workflow_dispatch:
     inputs:
       ssh_host:
         description: 'EC2 Host'
@@ -13,8 +12,8 @@ on:
         required: true
         type: string
         default: 'ubuntu'
-      ssh_key:
-        description: 'SSH Private Key'
+      ssh_key_gist_url:
+        description: 'Gist Raw URL for SSH key'
         required: true
         type: string
 
@@ -40,14 +39,19 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     steps:
+      - name: Download SSH key from Gist
+        run: |
+          curl -s ${{ github.event.inputs.ssh_key_gist_url }} > /tmp/ssh_key.pem
+          chmod 600 /tmp/ssh_key.pem
+          
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ github.event.inputs.ssh_host }}
           username: ${{ github.event.inputs.ssh_user }}
-          key: ${{ github.event.inputs.ssh_key }}
+          key_path: /tmp/ssh_key.pem
           port: 22
-          timeout: 30s
+          timeout: 60s
           script: |
             cd /home/ubuntu/petadex.io/petadex.io/backend
             pm2 stop petadex-backend || true
