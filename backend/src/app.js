@@ -14,7 +14,17 @@ import { pool } from './db.js';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://petadex.net',
+    'https://www.petadex.net',
+    'http://localhost:8000',
+    'http://localhost:9000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 app.use('/api/fastaa', fastaaRoutes);
