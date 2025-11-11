@@ -39,17 +39,23 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     steps:
-      - name: Download SSH key from Gist
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Download SSH key
+        id: get_key
         run: |
-          curl -s ${{ github.event.inputs.ssh_key_gist_url }} > /tmp/ssh_key.pem
-          chmod 600 /tmp/ssh_key.pem
+          KEY_CONTENT=$(curl -s ${{ github.event.inputs.ssh_key_gist_url }})
+          echo "SSH_KEY<<EOF" >> $GITHUB_OUTPUT
+          echo "$KEY_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ github.event.inputs.ssh_host }}
           username: ${{ github.event.inputs.ssh_user }}
-          key_path: /tmp/ssh_key.pem
+          key: ${{ steps.get_key.outputs.SSH_KEY }}
           port: 22
           timeout: 60s
           script: |
