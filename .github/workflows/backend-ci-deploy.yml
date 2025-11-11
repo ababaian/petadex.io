@@ -1,9 +1,22 @@
 name: Backend CI & Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Remove push trigger, only manual
+    inputs:
+      ssh_host:
+        description: 'EC2 Host'
+        required: true
+        type: string
+        default: 'ec2-3-239-103-67.compute-1.amazonaws.com'
+      ssh_user:
+        description: 'SSH Username'
+        required: true
+        type: string
+        default: 'ubuntu'
+      ssh_key:
+        description: 'SSH Private Key'
+        required: true
+        type: string
 
 jobs:
   build_and_test:
@@ -13,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - name: Install dependencies
         run: |
           cd backend
@@ -27,30 +40,21 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ github.event.inputs.ssh_host }}
+          username: ${{ github.event.inputs.ssh_user }}
+          key: ${{ github.event.inputs.ssh_key }}
           port: 22
           timeout: 30s
           script: |
-            cd /home/ec2-user/petadex.io/backend
-
-            # Clean up old process & free port
+            cd /home/ubuntu/petadex.io/petadex.io/backend
             pm2 stop petadex-backend || true
             pm2 delete petadex-backend || true
             sudo lsof -i TCP:3001 -t | xargs -r sudo kill -9
-
-            # Pull latest code & rebuild
             git fetch --all
             git reset --hard origin/main
             npm ci --only=production
-
-            # Start fresh
             pm2 start src/index.js --name petadex-backend
             pm2 save
