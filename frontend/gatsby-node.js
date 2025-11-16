@@ -11,9 +11,9 @@ exports.createPages = async ({ actions }) => {
   const { createPage } = actions;
 
   try {
-    const apiUrl = process.env.GATSBY_API_URL || "http://localhost:3001/api";
-    const response = await fetch(`${apiUrl}/fastaa`, {
-      signal: AbortSignal.timeout(5000) // 5 second timeout
+    const apiUrl = process.env.GATSBY_API_URL || "http://localhost:3001";
+    const response = await fetch(`${apiUrl}/api/fastaa`, {
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     });
     
     if (!response.ok) {
