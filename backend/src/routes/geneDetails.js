@@ -19,10 +19,8 @@ router.get('/:accession/header', async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT 
         w.accession,
-        w.geo_loc_name_country_calc as origin_country,
-        t.temperature
+        w.geo_loc_name_country_calc as origin_country
       FROM with_sra_and_biosample_loc_metadata w
-      LEFT JOIN with_biosample_temp_data t ON w.accession = t.accession
       WHERE w.accession = $1
       LIMIT 1`,
       [value]
@@ -47,16 +45,21 @@ router.get('/:accession/origin', async (req, res, next) => {
 
   try {
     const { rows } = await pool.query(
-      `SELECT 
+      `SELECT
         w.accession,
         w.geo_loc_name_country_calc as country,
         w.geo_loc_name_country_continent_calc as continent,
         w.biome,
-        w.collection_date_sam as collection_date,
         w.organism as source_organism,
         w.elevation,
-        ST_Y(w.lat_lon) as latitude,
-        ST_X(w.lat_lon) as longitude,
+        CASE
+          WHEN w.lat_lon IS NOT NULL THEN ST_Y(w.lat_lon)
+          ELSE NULL
+        END as latitude,
+        CASE
+          WHEN w.lat_lon IS NOT NULL THEN ST_X(w.lat_lon)
+          ELSE NULL
+        END as longitude,
         w.geo_loc_name_sam as location_name
       FROM with_sra_and_biosample_loc_metadata w
       WHERE w.accession = $1
@@ -92,10 +95,8 @@ router.get('/:accession/synthesized', async (req, res, next) => {
         w.synthetic,
         w.parent_accessions,
         w.parent_genes,
-        w.synonyms,
-        t.temperature
+        w.synonyms
       FROM with_sra_metadata w
-      LEFT JOIN with_biosample_temp_data t ON w.accession = t.accession
       WHERE w.accession = $1`,
       [value]
     );
@@ -125,7 +126,7 @@ router.get('/:accession/research', async (req, res, next) => {
         w.biosample,
         w.acc as sra_accession,
         w.sra_study,
-        w.releasedate as release_date,
+        w.release_date,
         w.organism,
         w.biosamplemodel_sam as biosample_model
       FROM with_sra_metadata w
@@ -153,35 +154,40 @@ router.get('/:accession', async (req, res, next) => {
 
   try {
     const { rows } = await pool.query(
-      `SELECT 
-        w.accession,
-        w.aa_sequence,
-        w.source,
-        w.genotype,
-        w.genotype_description,
-        w.synthetic,
-        w.parent_accessions,
-        w.parent_genes,
-        w.synonyms,
-        w.bioproject,
-        w.biosample,
-        w.acc as sra_accession,
-        w.sra_study,
-        w.releasedate as release_date,
-        w.organism,
-        w.biosamplemodel_sam as biosample_model,
-        w.geo_loc_name_country_calc as country,
-        w.geo_loc_name_country_continent_calc as continent,
-        w.biome,
-        w.collection_date_sam as collection_date,
-        w.elevation,
-        ST_Y(w.lat_lon) as latitude,
-        ST_X(w.lat_lon) as longitude,
-        w.geo_loc_name_sam as location_name,
-        t.temperature
-      FROM with_sra_and_biosample_loc_metadata w
-      LEFT JOIN with_biosample_temp_data t ON w.accession = t.accession
-      WHERE w.accession = $1
+      `SELECT
+        s.accession,
+        s.aa_sequence,
+        s.source,
+        s.genotype,
+        s.genotype_description,
+        s.synthetic,
+        s.parent_accessions,
+        s.parent_genes,
+        s.synonyms,
+        s.bioproject,
+        s.biosample,
+        s.acc as sra_accession,
+        s.sra_study,
+        s.release_date,
+        s.organism,
+        s.biosamplemodel_sam as biosample_model,
+        s.geo_loc_name_country_calc as country,
+        s.geo_loc_name_country_continent_calc as continent,
+        s.collection_date_sam as collection_date,
+        s.geo_loc_name_sam as location_name,
+        l.biome,
+        l.elevation,
+        CASE
+          WHEN l.lat_lon IS NOT NULL THEN ST_Y(l.lat_lon)
+          ELSE NULL
+        END as latitude,
+        CASE
+          WHEN l.lat_lon IS NOT NULL THEN ST_X(l.lat_lon)
+          ELSE NULL
+        END as longitude
+      FROM with_sra_metadata s
+      LEFT JOIN with_sra_and_biosample_loc_metadata l ON s.accession = l.accession
+      WHERE s.accession = $1
       LIMIT 1`,
       [value]
     );
