@@ -14,14 +14,14 @@ export default function MetadataPanel({ metadata, accession }) {
     async function fetchMetadata() {
       try {
         // Fetch origin data
-        const originRes = await fetch(`${apiBase}/gene-details/${accession}/origin`);
+        const originRes = await fetch(`${apiBase}/api/gene-details/${accession}/origin`);
         if (originRes.ok) {
           const data = await originRes.json();
           setOriginData(data);
         }
 
         // Fetch research context
-        const researchRes = await fetch(`${apiBase}/gene-details/${accession}/research`);
+        const researchRes = await fetch(`${apiBase}/api/gene-details/${accession}/research`);
         if (researchRes.ok) {
           const data = await researchRes.json();
           setResearchData(data);

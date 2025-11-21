@@ -9,7 +9,7 @@ const FastaaPage = () => {
   const [error, setError] = useState(null);
 
   const apiBase = process.env.GATSBY_API_URL;
-  const endpoint = `${apiBase}/fastaa`;
+  const endpoint = `${apiBase}/api/fastaa`;
 
   useEffect(() => {
     async function load() {
