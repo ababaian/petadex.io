@@ -6,7 +6,7 @@ import { pool } from '../db.js';
 const router = Router();
 const schema = Joi.string().max(64).required();
 
-// GET average readout for a specific gene
+// GET average readout for a specific gene, grouped by plate with metadata
 router.get('/gene/:gene/average', async (req, res, next) => {
   console.log('API request received for gene plate data:', req.params.gene);
   const { error, value } = schema.validate(req.params.gene);
@@ -17,22 +17,35 @@ router.get('/gene/:gene/average', async (req, res, next) => {
 
   try {
     const { rows } = await pool.query(
-      `SELECT 
-        AVG(readout_value) as average_readout,
+      `SELECT
+        pd.plate,
+        AVG(pd.readout_value) as average_readout,
         COUNT(*) as sample_count,
-        measurement_type
-      FROM plate_data 
-      WHERE gene = $1 AND readout_value IS NOT NULL
-      GROUP BY measurement_type`,
+        pd.measurement_type,
+        pm.timepoint_hours,
+        pm.temp_celsius,
+        pm.ph,
+        pm.media,
+        pm.organism,
+        pm.exp_id,
+        pm.exp_description,
+        pm.date_created,
+        pm.date_read
+      FROM plate_data pd
+      LEFT JOIN plate_metadata pm ON pd.plate = pm.plate
+      WHERE pd.gene = $1 AND pd.readout_value IS NOT NULL
+      GROUP BY pd.plate, pd.measurement_type, pm.timepoint_hours, pm.temp_celsius,
+               pm.ph, pm.media, pm.organism, pm.exp_id, pm.exp_description,
+               pm.date_created, pm.date_read
+      ORDER BY pm.timepoint_hours, pd.plate`,
       [value]
     );
-    
-    console.log('Query result:', rows.length ? 'Found' : 'Not found');
+
+    console.log('Query result:', rows.length, 'plate(s) found');
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
-    
-    // If there's only one measurement type, return that directly
-    // Otherwise return the first one (or you could return all)
-    res.json(rows[0]);
+
+    // Return all plate averages with their metadata
+    res.json(rows);
   } catch (err) {
     console.error('Database error:', err);
     next(err);
