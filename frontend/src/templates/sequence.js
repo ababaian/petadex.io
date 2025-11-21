@@ -34,7 +34,7 @@ export default function SequenceTemplate({ pageContext }) {
 
     async function fetchSequence() {
       try {
-        const res = await fetch(`${apiBase}/api/fastaa/${accession}`);
+        const res = await fetch(`${apiBase}/fastaa/${accession}`);
         if (!res.ok) throw new Error(`Sequence not found: ${accession}`);
         const data = await res.json();
         setSequence(data);
@@ -58,14 +58,14 @@ export default function SequenceTemplate({ pageContext }) {
     async function fetchData() {
       try {
         // Fetch gene metadata (existing)
-        const metadataRes = await fetch(`${apiBase}/api/gene-metadata/by-accession/${accession}`);
+        const metadataRes = await fetch(`${apiBase}/gene-metadata/by-accession/${accession}`);
         if (metadataRes.ok) {
           const data = await metadataRes.json();
           setGeneMetadata(Array.isArray(data) ? data : [data]);
         }
 
         // Fetch header data for quick stats
-        const headerRes = await fetch(`${apiBase}/api/gene-details/${accession}/header`);
+        const headerRes = await fetch(`${apiBase}/gene-details/${accession}/header`);
         if (headerRes.ok) {
           const data = await headerRes.json();
           setHeaderData(data);
@@ -88,7 +88,7 @@ export default function SequenceTemplate({ pageContext }) {
     async function fetchSummaryStats() {
       try {
         setStatsLoading(true);
-        const response = await fetch(`${apiBase}/api/aa-seq-features/${accession}`);
+        const response = await fetch(`${apiBase}/aa-seq-features/${accession}`);
 
         if (!response.ok) {
           throw new Error('Features not found');
@@ -121,7 +121,7 @@ export default function SequenceTemplate({ pageContext }) {
         if (!gene.gene) return null;
 
         try {
-          const res = await fetch(`${apiBase}/api/plate-data/gene/${gene.gene}/average`);
+          const res = await fetch(`${apiBase}/plate-data/gene/${gene.gene}/average`);
           if (res.ok) {
             const data = await res.json();
             return { geneId: gene.gene, data };
