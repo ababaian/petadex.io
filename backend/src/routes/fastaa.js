@@ -10,7 +10,20 @@ const schema = Joi.string().max(64).required();
 router.get('/', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered, in_gene_metadata FROM fastaa ORDER BY accession ASC'
+      `SELECT
+        f.accession,
+        f.aa_sequence as sequence,
+        f.source,
+        f.synonyms,
+        f.date_entered,
+        f.in_gene_metadata,
+        EXISTS(
+          SELECT 1
+          FROM with_sra_and_biosample_loc_metadata m
+          WHERE m.accession = f.accession
+        ) as in_sra_metadata
+      FROM fastaa f
+      ORDER BY f.accession ASC`
     );
     res.json(rows);
   } catch (err) {
@@ -29,7 +42,20 @@ router.get('/:accession', async (req, res, next) => {
 
   try {
     const { rows } = await pool.query(
-      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered, in_gene_metadata FROM fastaa WHERE accession = $1',
+      `SELECT
+        f.accession,
+        f.aa_sequence as sequence,
+        f.source,
+        f.synonyms,
+        f.date_entered,
+        f.in_gene_metadata,
+        EXISTS(
+          SELECT 1
+          FROM with_sra_and_biosample_loc_metadata m
+          WHERE m.accession = f.accession
+        ) as in_sra_metadata
+      FROM fastaa f
+      WHERE f.accession = $1`,
       [value]
     );
     console.log('Query result:', rows.length ? 'Found' : 'Not found');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
 import SequenceViewer from "../components/SequenceViewer";
+import FeaturedPETases from "../components/FeaturedPETases";
 
 const FastaaPage = () => {
   const [sequences, setSequences] = useState([]);
@@ -74,7 +75,7 @@ const FastaaPage = () => {
         <h2
           onClick={toggleOpen}
           style={{
-            fontSize: "1.8rem",
+            fontSize: "1.3rem",
             marginBottom: isOpen ? "1rem" : "0",
             color: "#2c3e50",
             paddingBottom: "0.75rem",
@@ -90,7 +91,7 @@ const FastaaPage = () => {
         >
           <span style={{
             marginRight: "0.5rem",
-            fontSize: "1.5rem",
+            fontSize: "1.1rem",
             transition: "transform 0.2s",
             transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
             display: "inline-block"
@@ -322,13 +323,20 @@ const FastaaPage = () => {
         </p>
       </header>
 
+      {/* Featured PETases - only show when not searching */}
+      {!searchInput && (
+        <div style={{ marginTop: "-1.5rem" }}>
+          <FeaturedPETases sequences={sequences} loading={loading} />
+        </div>
+      )}
+
       {!loading && filteredSequences.length === 0 && searchInput && (
         <div style={{
-          padding: "2rem",
+          padding: "1rem",
           textAlign: "center",
           color: "#666",
           backgroundColor: "#f8fafc",
-          borderRadius: "8px"
+          borderRadius: "1px"
         }}>
           No sequences found matching "{searchInput}"
         </div>
