@@ -10,7 +10,7 @@ const schema = Joi.string().max(64).required();
 router.get('/', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered FROM fastaa ORDER BY accession ASC'
+      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered, in_gene_metadata FROM fastaa ORDER BY accession ASC'
     );
     res.json(rows);
   } catch (err) {
@@ -29,7 +29,7 @@ router.get('/:accession', async (req, res, next) => {
 
   try {
     const { rows } = await pool.query(
-      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered FROM fastaa WHERE accession = $1',
+      'SELECT accession, aa_sequence as sequence, source, synonyms, date_entered, in_gene_metadata FROM fastaa WHERE accession = $1',
       [value]
     );
     console.log('Query result:', rows.length ? 'Found' : 'Not found');
