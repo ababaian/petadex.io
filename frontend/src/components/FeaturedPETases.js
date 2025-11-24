@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Link } from "gatsby";
+import ProteinViewer from "./ProteinViewer";
 
 const FeaturedPETases = ({ sequences, loading }) => {
   // Hard-coded featured PETases
@@ -106,24 +107,13 @@ const FeaturedPETases = ({ sequences, loading }) => {
           {label}
         </div>
 
-        {/* Structural icon placeholder */}
+        {/* 3D Structure Viewer */}
         <div style={{
           width: "80px",
           height: "80px",
-          backgroundColor: "#f1f5f9",
-          borderRadius: "8px",
-          marginBottom: "0.75rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#94a3b8",
-          fontSize: "0.7rem",
-          textAlign: "center",
-          padding: "0.25rem"
+          marginBottom: "0.75rem"
         }}>
-          Structure View
-          <br />
-          (Coming Soon)
+          <ProteinViewer accession={seq.accession} width="80px" height="80px" />
         </div>
 
         {/* Name/Label */}

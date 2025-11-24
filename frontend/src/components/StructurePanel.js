@@ -1,42 +1,36 @@
 import React from "react";
+import ProteinViewer from "./ProteinViewer";
 
 export default function StructurePanel({ accession }) {
-  // MVP: Placeholder for future 3D structure viewer
-  // You can integrate tools like Mol* or NGL Viewer later
-  
   return (
     <div>
       <div style={{
-        padding: "3rem 2rem",
-        textAlign: "center",
         backgroundColor: "#f9fafb",
         borderRadius: "8px",
-        border: "2px dashed #d1d5db"
+        border: "1px solid #e5e7eb",
+        overflow: "hidden"
       }}>
         <div style={{
-          fontSize: "3rem",
-          marginBottom: "1rem"
+          padding: "1rem",
+          backgroundColor: "#ffffff",
+          borderBottom: "1px solid #e5e7eb"
         }}>
-          🧬
+          <h3 style={{
+            fontSize: "1.1rem",
+            margin: 0,
+            color: "#374151",
+            fontWeight: "600"
+          }}>
+            3D Structure Viewer
+          </h3>
         </div>
-        <h3 style={{
-          fontSize: "1.25rem",
-          marginBottom: "0.5rem",
-          color: "#374151"
-        }}>
-          3D Structure Viewer
-        </h3>
-        <p style={{
-          color: "#6b7280",
-          marginBottom: "1.5rem"
-        }}>
-          Coming soon: Interactive 3D protein structure visualization
-        </p>
+
         <div style={{
-          fontSize: "0.9rem",
-          color: "#9ca3af"
+          width: "100%",
+          height: "500px",
+          backgroundColor: "#ffffff"
         }}>
-          Accession: {accession}
+          <ProteinViewer accession={accession} width="100%" height="500px" />
         </div>
       </div>
 
@@ -52,7 +46,7 @@ export default function StructurePanel({ accession }) {
           color: "#1e40af",
           fontSize: "0.9rem"
         }}>
-          <strong>Future features:</strong> PDB structure loading, interactive rotation, residue highlighting, and secondary structure visualization
+          <strong>Tip:</strong> Click and drag to rotate the structure. Scroll to zoom in/out.
         </p>
       </div>
     </div>

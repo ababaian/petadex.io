@@ -10,6 +10,7 @@ import aaSeqFeaturesRoutes from './routes/aaSeqFeatures.js';
 import geneMetadataRoutes from './routes/geneMetadata.js';
 import plateDataRoutes from './routes/plateData.js';
 import geneDetailsRoutes from './routes/geneDetails.js';
+import pdbRoutes from './routes/pdb.js';
 import { pool } from './db.js';
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/aa-seq-features', aaSeqFeaturesRoutes);
 app.use('/api/gene-metadata', geneMetadataRoutes);
 app.use('/api/plate-data', plateDataRoutes);
 app.use('/api/gene-details', geneDetailsRoutes);
+app.use('/api/pdb', pdbRoutes);
 
 // (Optional) health check route
 app.get('/health', async (req, res) => {
