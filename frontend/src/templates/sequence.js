@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import DataViewer from "../components/DataViewer";
 import SynthesizedGenePanel from "../components/SynthesizedGenePanel";
+import config from "../config";
 
 export default function SequenceTemplate({ pageContext }) {
   const [sequence, setSequence] = useState(pageContext.sequence || null);
@@ -30,11 +31,10 @@ export default function SequenceTemplate({ pageContext }) {
     }
 
     const accession = match[1];
-    const apiBase = process.env.GATSBY_API_URL;
 
     async function fetchSequence() {
       try {
-        const res = await fetch(`${apiBase}/fastaa/${accession}`);
+        const res = await fetch(`${config.apiUrl}/fastaa/${accession}`);
         if (!res.ok) throw new Error(`Sequence not found: ${accession}`);
         const data = await res.json();
         setSequence(data);
@@ -52,20 +52,19 @@ export default function SequenceTemplate({ pageContext }) {
   useEffect(() => {
     if (!sequence?.accession) return;
 
-    const apiBase = process.env.GATSBY_API_URL;
     const accession = sequence.accession;
 
     async function fetchData() {
       try {
         // Fetch gene metadata (existing)
-        const metadataRes = await fetch(`${apiBase}/gene-metadata/by-accession/${accession}`);
+        const metadataRes = await fetch(`${config.apiUrl}/gene-metadata/by-accession/${accession}`);
         if (metadataRes.ok) {
           const data = await metadataRes.json();
           setGeneMetadata(Array.isArray(data) ? data : [data]);
         }
 
         // Fetch header data for quick stats
-        const headerRes = await fetch(`${apiBase}/gene-details/${accession}/header`);
+        const headerRes = await fetch(`${config.apiUrl}/gene-details/${accession}/header`);
         if (headerRes.ok) {
           const data = await headerRes.json();
           setHeaderData(data);
@@ -82,13 +81,12 @@ export default function SequenceTemplate({ pageContext }) {
   useEffect(() => {
     if (!sequence?.accession) return;
 
-    const apiBase = process.env.GATSBY_API_URL;
     const accession = sequence.accession;
 
     async function fetchSummaryStats() {
       try {
         setStatsLoading(true);
-        const response = await fetch(`${apiBase}/aa-seq-features/${accession}`);
+        const response = await fetch(`${config.apiUrl}/aa-seq-features/${accession}`);
 
         if (!response.ok) {
           throw new Error('Features not found');
@@ -114,14 +112,12 @@ export default function SequenceTemplate({ pageContext }) {
   useEffect(() => {
     if (!geneMetadata || geneMetadata.length === 0) return;
 
-    const apiBase = process.env.GATSBY_API_URL;
-
     async function fetchPlateData() {
       const dataPromises = geneMetadata.map(async (gene) => {
         if (!gene.gene) return null;
 
         try {
-          const res = await fetch(`${apiBase}/plate-data/gene/${gene.gene}/average`);
+          const res = await fetch(`${config.apiUrl}/plate-data/gene/${gene.gene}/average`);
           if (res.ok) {
             const data = await res.json();
             return { geneId: gene.gene, data };

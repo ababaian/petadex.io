@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import config from "../config";
 
 const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
   const viewerRef = useRef(null);
@@ -38,8 +39,7 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
         console.log('Using $3Dmol:', typeof $3Dmol);
 
         // Get PDB info from backend
-        const apiBase = process.env.GATSBY_API_URL || "http://localhost:3001/api";
-        const pdbUrl = `${apiBase}/pdb/accession/${accession}`;
+        const pdbUrl = `${config.apiUrl}/pdb/accession/${accession}`;
         console.log('Fetching PDB info from:', pdbUrl);
 
         const response = await fetch(pdbUrl);

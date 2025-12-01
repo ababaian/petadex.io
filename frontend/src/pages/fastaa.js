@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
 import SequenceViewer from "../components/SequenceViewer";
 import FeaturedPETases from "../components/FeaturedPETases";
+import config from "../config";
 
 const FastaaPage = () => {
   const [sequences, setSequences] = useState([]);
@@ -16,8 +17,7 @@ const FastaaPage = () => {
   const INITIAL_VISIBLE_COUNT = 10;
   const LOAD_MORE_INCREMENT = 20;
 
-  const apiBase = process.env.GATSBY_API_URL;
-  const endpoint = `${apiBase}/fastaa`;
+  const endpoint = `${config.apiUrl}/fastaa`;
 
   useEffect(() => {
     async function load() {
@@ -74,6 +74,14 @@ const FastaaPage = () => {
       <section key={sectionKey} style={{ marginBottom: "2rem" }}>
         <h2
           onClick={toggleOpen}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleOpen();
+            }
+          }}
+          role="button"
+          tabIndex={0}
           style={{
             fontSize: "1.3rem",
             marginBottom: isOpen ? "1rem" : "0",

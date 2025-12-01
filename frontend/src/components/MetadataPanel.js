@@ -1,5 +1,6 @@
 // frontend/src/components/MetadataPanel.js
 import React, { useState, useEffect } from "react";
+import config from "../config";
 
 export default function MetadataPanel({ metadata, accession }) {
   const [originData, setOriginData] = useState(null);
@@ -9,19 +10,17 @@ export default function MetadataPanel({ metadata, accession }) {
   useEffect(() => {
     if (!accession) return;
 
-    const apiBase = process.env.GATSBY_API_URL;
-
     async function fetchMetadata() {
       try {
         // Fetch origin data
-        const originRes = await fetch(`${apiBase}/gene-details/${accession}/origin`);
+        const originRes = await fetch(`${config.apiUrl}/gene-details/${accession}/origin`);
         if (originRes.ok) {
           const data = await originRes.json();
           setOriginData(data);
         }
 
         // Fetch research context
-        const researchRes = await fetch(`${apiBase}/gene-details/${accession}/research`);
+        const researchRes = await fetch(`${config.apiUrl}/gene-details/${accession}/research`);
         if (researchRes.ok) {
           const data = await researchRes.json();
           setResearchData(data);
@@ -234,6 +233,7 @@ export default function MetadataPanel({ metadata, accession }) {
                 border: "1px solid #e5e7eb"
               }}>
                 <iframe
+                  title="Geographic location map"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -250,7 +250,7 @@ export default function MetadataPanel({ metadata, accession }) {
       {/* Research Context Section */}
       {researchData && (
         <div style={{ marginBottom: "2rem" }}>
-          <div 
+          <div
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -263,6 +263,14 @@ export default function MetadataPanel({ metadata, accession }) {
               marginBottom: researchExpanded ? "1rem" : "0"
             }}
             onClick={() => setResearchExpanded(!researchExpanded)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setResearchExpanded(!researchExpanded);
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <h3 style={{
               fontSize: "1.25rem",

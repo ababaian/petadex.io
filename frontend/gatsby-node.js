@@ -10,15 +10,6 @@
 exports.createPages = async ({ actions }) => {
   const { createPage } = actions;
 
-  // Create a client-only route that matches all /sequence/* paths
-  // This ensures all sequence pages return 200 status instead of 404
-  createPage({
-    path: "/sequence/*",
-    matchPath: "/sequence/*",
-    component: require.resolve("./src/templates/sequence.js"),
-    context: {},
-  });
-
   try {
     const apiUrl = process.env.GATSBY_API_URL || "http://localhost:3001";
     const response = await fetch(`${apiUrl}/api/fastaa`, {
@@ -27,7 +18,7 @@ exports.createPages = async ({ actions }) => {
 
     if (!response.ok) {
       console.warn(`API returned status ${response.status}, skipping individual sequence page generation`);
-      console.log("Using client-only route fallback for all sequence pages");
+      console.log("Sequence pages will be rendered client-side on demand");
       return;
     }
 
@@ -42,10 +33,10 @@ exports.createPages = async ({ actions }) => {
       });
     });
 
-    console.log(`Created ${sequences.length} individual sequence pages + client-only fallback route`);
+    console.log(`Created ${sequences.length} individual sequence pages`);
   } catch (error) {
     console.warn("Error creating individual sequence pages (backend unavailable during build):", error.message);
-    console.log("All sequence pages will use client-only route - data will be fetched client-side");
-    // Don't throw - allow build to continue with client-only route
+    console.log("Sequence pages will be rendered client-side on demand");
+    // Don't throw - allow build to continue
   }
 };
