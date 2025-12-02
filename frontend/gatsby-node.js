@@ -10,6 +10,9 @@
 exports.createPages = async ({ actions }) => {
   const { createPage } = actions;
 
+  // Create client-only route for sequence pages that aren't pre-rendered
+  // Using onCreatePage hook instead of path with * to avoid Windows issues
+
   try {
     const apiUrl = process.env.GATSBY_API_URL || "http://localhost:3001";
     const response = await fetch(`${apiUrl}/api/fastaa`, {

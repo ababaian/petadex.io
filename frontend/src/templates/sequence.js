@@ -1,8 +1,10 @@
 // frontend/src/templates/sequence.js
 import React, { useState, useEffect } from "react";
+import { Link } from "gatsby";
 import DataViewer from "../components/DataViewer";
 import SynthesizedGenePanel from "../components/SynthesizedGenePanel";
 import config from "../config";
+import "../styles/home.css";
 
 export default function SequenceTemplate({ pageContext }) {
   const [sequence, setSequence] = useState(pageContext.sequence || null);
@@ -205,12 +207,28 @@ export default function SequenceTemplate({ pageContext }) {
   }
 
   return (
-    <div style={{ 
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: "2rem"
-    }}>
-      <header style={{ marginBottom: "2rem" }}>
+    <>
+      <header role="banner" className="ui-section-header">
+        <div className="ui-layout-container">
+          <div className="ui-section-header__layout ui-layout-flex">
+            {/* LOGO */}
+            <Link to="/" role="link" aria-label="PETadex Home" style={{ display: 'flex', alignItems: 'center' }}>
+              <img
+                src={require('../images/petadex-icon.png').default}
+                alt="PETadex Logo"
+                style={{ height: '48px', width: 'auto' }}
+              />
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div style={{
+        maxWidth: "1200px",
+        margin: "0 auto",
+        padding: "2rem"
+      }}>
+        <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ 
           fontSize: "2.5rem",
           marginBottom: "0.5rem",
@@ -254,7 +272,7 @@ export default function SequenceTemplate({ pageContext }) {
         }}>
           Plastic-degrading enzyme sequence
         </p>
-      </header>
+        </div>
 
       <SynthesizedGenePanel 
         geneMetadata={geneMetadata} 
@@ -277,6 +295,7 @@ export default function SequenceTemplate({ pageContext }) {
       }}>
         © {new Date().getFullYear()} PETadex.io
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

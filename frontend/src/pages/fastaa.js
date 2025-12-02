@@ -3,6 +3,7 @@ import { Link } from "gatsby";
 import SequenceViewer from "../components/SequenceViewer";
 import FeaturedPETases from "../components/FeaturedPETases";
 import config from "../config";
+import "../styles/home.css";
 
 const FastaaPage = () => {
   const [sequences, setSequences] = useState([]);
@@ -278,12 +279,28 @@ const FastaaPage = () => {
   };
 
   return (
-    <main style={{
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: "2rem"
-    }}>
-      <header style={{ marginBottom: "2rem" }}>
+    <>
+      <header role="banner" className="ui-section-header">
+        <div className="ui-layout-container">
+          <div className="ui-section-header__layout ui-layout-flex">
+            {/* LOGO */}
+            <Link to="/" role="link" aria-label="PETadex Home" style={{ display: 'flex', alignItems: 'center' }}>
+              <img
+                src={require('../images/petadex-icon.png').default}
+                alt="PETadex Logo"
+                style={{ height: '48px', width: 'auto' }}
+              />
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main style={{
+        maxWidth: "1200px",
+        margin: "0 auto",
+        padding: "2rem"
+      }}>
+        <div style={{ marginBottom: "2rem" }}>
         <h1 style={{
           fontSize: "2.5rem",
           marginBottom: "0.5rem",
@@ -329,7 +346,7 @@ const FastaaPage = () => {
             `Total sequences: ${sequences.length} (${sequencesWithMetadata.length} with experimental data, ${sequencesWithoutMetadata.length} without)`
           )}
         </p>
-      </header>
+        </div>
 
       {/* Featured PETases - only show when not searching */}
       {!searchInput && (
@@ -368,7 +385,8 @@ const FastaaPage = () => {
         withoutMetadataVisibleCount,
         setWithoutMetadataVisibleCount
       )}
-    </main>
+      </main>
+    </>
   );
 };
 

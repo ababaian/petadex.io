@@ -112,7 +112,7 @@ export default function SynthesizedGenePanel({ geneMetadata, plateData }) {
                 textAlign: "left"
               }}
             >
-              <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", flexWrap: "wrap", flex: "1" }}>
                 {gene.gene && (
                   <div>
                     <span style={{
@@ -182,7 +182,8 @@ export default function SynthesizedGenePanel({ geneMetadata, plateData }) {
                   height: "20px",
                   transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
                   transition: "transform 0.2s ease",
-                  flexShrink: 0
+                  flexShrink: 0,
+                  marginLeft: "1rem"
                 }}
                 fill="none"
                 stroke="#6b7280"
