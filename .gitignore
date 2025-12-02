@@ -35,6 +35,4 @@ TMP*
 # ignore dependencies
 node_modules/
 tree_output.txt
-CLAUDE.md
 generated-schema.md
-frontend/src/config.js
