@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "gatsby";
 import "../styles/home.css";
+import { useScrollHeader } from "../hooks/useScrollHeader";
 
 export default function HomePage() {
+  useScrollHeader();
+
   return (
     <>
       <header role="banner" className="ui-section-header">

@@ -200,6 +200,10 @@ svg {
 5.0 LAYOUT
 --------------------------------------------------------------*/
 
+main[role="main"] {
+  padding-top: 5.5rem;
+}
+
 .ui-layout-container {
   padding-left: var(--ui-layout-container);
   padding-right: var(--ui-layout-container);
@@ -296,12 +300,20 @@ svg {
 .ui-section-header {
   padding-bottom: 1.25rem;
   padding-top: 1.25rem;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   background-color: var(--ui-color-background-primary);
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform: translateY(0);
+}
+
+.ui-section-header.header-hidden {
+  transform: translateY(-100%);
+  box-shadow: none;
 }
 
 .ui-section-header__layout { justify-content: space-between; }
@@ -534,6 +546,14 @@ svg {
   }
 
   /*------------------------------------------------------------
+  LAYOUT
+  ------------------------------------------------------------*/
+
+  main[role="main"] {
+    padding-top: 7rem;
+  }
+
+  /*------------------------------------------------------------
   SECTION
   ------------------------------------------------------------*/
 
@@ -701,7 +721,11 @@ svg {
   /*------------------------------------------------------------
   LAYOUT
   ------------------------------------------------------------*/
-  
+
+  main[role="main"] {
+    padding-top: 9rem;
+  }
+
   .ui-layout-container { width: 70rem; }
 
   /*------------------------------------------------------------

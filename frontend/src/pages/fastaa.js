@@ -4,8 +4,10 @@ import SequenceViewer from "../components/SequenceViewer";
 import FeaturedPETases from "../components/FeaturedPETases";
 import config from "../config";
 import "../styles/home.css";
+import { useScrollHeader } from "../hooks/useScrollHeader";
 
 const FastaaPage = () => {
+  useScrollHeader();
   const [sequences, setSequences] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -298,7 +300,8 @@ const FastaaPage = () => {
       <main style={{
         maxWidth: "1200px",
         margin: "0 auto",
-        padding: "2rem"
+        padding: "2rem",
+        paddingTop: "10rem"
       }}>
         <div style={{ marginBottom: "2rem" }}>
         <h1 style={{

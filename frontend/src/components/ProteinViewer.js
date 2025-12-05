@@ -86,16 +86,16 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
           viewer.zoomTo();
 
           // Then apply consistent zoom level based on container size
-          // For small containers (featured cards 80px), zoom out more to show full structure
-          // For large containers (detail page 500px), zoom out less
+          // For small containers (featured cards 120px), zoom in moderately
+          // For large containers (detail page 500px), zoom in more
           const containerHeight = containerRef.current.offsetHeight;
           let zoomFactor;
           if (containerHeight < 150) {
-            zoomFactor = 0.5; // Small cards - zoom way out
+            zoomFactor = 2.5; // Small cards - zoom in moderately
           } else if (containerHeight < 300) {
-            zoomFactor = 0.7; // Medium - zoom out moderately
+            zoomFactor = 2.5; // Medium - zoom in more
           } else {
-            zoomFactor = 0.85; // Large - zoom out just a bit
+            zoomFactor = 2.5; // Large - zoom in significantly
           }
 
           console.log('Container height:', containerHeight, 'Zoom factor:', zoomFactor);
