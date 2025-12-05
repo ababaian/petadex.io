@@ -1,10 +1,53 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
 import "../styles/home.css";
 import { useScrollHeader } from "../hooks/useScrollHeader";
+import SequencePanel from "../components/SequencePanel";
+import StructurePanel from "../components/StructurePanel";
+import MetadataPanel from "../components/MetadataPanel";
+import config from "../config";
 
 export default function HomePage() {
   useScrollHeader();
+  const ISPETASE_ACCESSION = "WP_054022242.1";
+
+  const [sequenceData, setSequenceData] = useState(null);
+  const [metadata, setMetadata] = useState(null);
+  const [summaryStats, setSummaryStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchIsPETaseData() {
+      try {
+        // Fetch sequence data
+        const seqRes = await fetch(`${config.apiUrl}/fastaa/${ISPETASE_ACCESSION}`);
+        if (seqRes.ok) {
+          const seqData = await seqRes.json();
+          setSequenceData(seqData);
+        }
+
+        // Fetch metadata
+        const metaRes = await fetch(`${config.apiUrl}/gene-metadata/by-accession/${ISPETASE_ACCESSION}`);
+        if (metaRes.ok) {
+          const metaData = await metaRes.json();
+          setMetadata(Array.isArray(metaData) ? metaData : [metaData]);
+        }
+
+        // Fetch summary stats
+        const statsRes = await fetch(`${config.apiUrl}/aa-seq-features/${ISPETASE_ACCESSION}`);
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setSummaryStats(statsData);
+        }
+      } catch (err) {
+        console.error('Error fetching IsPETase data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchIsPETaseData();
+  }, []);
 
   return (
     <>
@@ -52,9 +95,9 @@ export default function HomePage() {
             </div>
             {/* IMAGE */}
             <img
-              src="https://res.cloudinary.com/uisual/image/upload/assets/devices/ipad.png"
+              src={require('../images/cys-pilot-seqs.png').default}
               loading="lazy"
-              alt="PETadex Platform Preview"
+              alt="PETase Network Diagram"
               className="ui-section-hero--image"
             />
           </div>
@@ -76,12 +119,26 @@ export default function HomePage() {
           <div className="ui-layout-container">
             {/* Feature 1 */}
             <div className="ui-section-feature__layout ui-layout-grid ui-layout-grid-2">
-              <img
-                src="https://res.cloudinary.com/uisual/image/upload/assets/devices/ipad.png"
-                loading="lazy"
-                alt="Sequence Browser"
-                className="ui-image-half-left"
-              />
+              <div className="ui-image-half-left" style={{
+                backgroundColor: "white",
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                padding: "1rem",
+                maxHeight: "400px",
+                overflow: "auto",
+                width: "100%"
+              }}>
+                {loading ? (
+                  <p style={{ textAlign: "center", color: "#666" }}>Loading preview...</p>
+                ) : (
+                  <SequencePanel
+                    sequence={sequenceData?.sequence}
+                    accession={ISPETASE_ACCESSION}
+                    summaryStats={summaryStats}
+                    statsLoading={false}
+                  />
+                )}
+              </div>
               <div>
                 <h2>Comprehensive Sequence Database</h2>
                 <p className="ui-text-intro">
@@ -128,22 +185,42 @@ export default function HomePage() {
                   </li>
                 </ul>
               </div>
-              <img
-                src="https://res.cloudinary.com/uisual/image/upload/assets/devices/ipad.png"
-                loading="lazy"
-                alt="3D Structure Viewer"
-                className="ui-image-half-right"
-              />
+              <div className="ui-image-half-right" style={{
+                backgroundColor: "white",
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                overflow: "hidden",
+                width: "100%",
+                height: "500px"
+              }}>
+                {loading ? (
+                  <p style={{ textAlign: "center", color: "#666", paddingTop: "2rem" }}>Loading preview...</p>
+                ) : (
+                  <StructurePanel accession={ISPETASE_ACCESSION} />
+                )}
+              </div>
             </div>
 
             {/* Feature 3 */}
             <div className="ui-section-feature__layout ui-layout-grid ui-layout-grid-2">
-              <img
-                src="https://res.cloudinary.com/uisual/image/upload/assets/devices/ipad.png"
-                loading="lazy"
-                alt="Experimental Data"
-                className="ui-image-half-left"
-              />
+              <div className="ui-image-half-left" style={{
+                backgroundColor: "white",
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                padding: "1rem",
+                maxHeight: "400px",
+                overflow: "auto",
+                width: "100%"
+              }}>
+                {loading ? (
+                  <p style={{ textAlign: "center", color: "#666" }}>Loading preview...</p>
+                ) : (
+                  <MetadataPanel
+                    metadata={metadata}
+                    accession={ISPETASE_ACCESSION}
+                  />
+                )}
+              </div>
               <div>
                 <h2>Experimental Data & Analytics</h2>
                 <p className="ui-text-intro">
@@ -246,13 +323,6 @@ export default function HomePage() {
                 <p className="ui-text-note"><small>Open source and always free.</small></p>
               </div>
             </div>
-            {/* IMAGE */}
-            <img
-              src="https://res.cloudinary.com/uisual/image/upload/assets/devices/ipad-t.png"
-              loading="lazy"
-              alt="PETadex Platform"
-              className="ui-section-hero--image"
-            />
           </div>
         </section>
       </main>

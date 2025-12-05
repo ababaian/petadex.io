@@ -308,7 +308,7 @@ const FastaaPage = () => {
           fontSize: "2.5rem",
           marginBottom: "0.5rem",
           color: "#2c3e50"
-        }}>PETase Database</h1>
+        }}>A Database for PETases</h1>
         <p style={{
           color: "#666",
           fontSize: "1.1rem",

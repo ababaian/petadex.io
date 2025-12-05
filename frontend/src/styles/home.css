@@ -414,6 +414,7 @@ main[role="main"] {
 .ui-section-close {
   background-color: var(--ui-color-background-secondary);
   padding-top: 5rem;
+  padding-bottom: 2rem;
   text-align: center;
 }
 
