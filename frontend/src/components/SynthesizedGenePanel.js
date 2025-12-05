@@ -290,18 +290,18 @@ export default function SynthesizedGenePanel({ geneMetadata, plateData }) {
                         backgroundColor: "white",
                         borderRadius: "4px",
                         padding: "1rem",
-                        marginBottom: "1rem"
+                        marginBottom: "-2rem"
                       }}>
                         <ResponsiveContainer width="100%" height={300}>
                           <LineChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis
                               dataKey="timepoint"
-                              label={{ value: 'Time (hours)', position: 'insideBottom', offset: -10, style: { fontWeight: 'bold' } }}
+                              label={{ value: 'Time (hours)', position: 'insideBottom', offset: 0, style: { fontWeight: 'bold', textAnchor: 'middle' } }}
                               tick={{ fontSize: 12 }}
                             />
                             <YAxis
-                              label={{ value: 'Median Pixel Intensity', angle: -90, position: 'insideLeft', style: { fontWeight: 'bold' } }}
+                              label={{ value: 'Median Pixel Intensity', angle: -90, position: 'center', dx: -25, style: { fontWeight: 'bold' } }}
                               tick={{ fontSize: 12 }}
                             />
                             <Tooltip
@@ -314,6 +314,7 @@ export default function SynthesizedGenePanel({ geneMetadata, plateData }) {
                               formatter={(value) => value?.toFixed(4)}
                             />
                             <Legend
+                              align="right"
                               wrapperStyle={{ fontSize: '0.875rem', paddingTop: '10px' }}
                             />
                             <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" strokeWidth={1} />
