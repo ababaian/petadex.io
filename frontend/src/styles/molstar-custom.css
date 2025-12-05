@@ -1,0 +1,156 @@
+/* Custom Molstar styling for PETadex */
+
+/* Main plugin container */
+.msp-plugin {
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Top layout panel styling */
+.msp-plugin .msp-layout-top {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Hide controls for compact viewers (small cards) */
+.molstar-compact .msp-layout-controls,
+.molstar-compact .msp-layout-top,
+.molstar-compact .msp-layout-bottom,
+.molstar-compact .msp-layout-left,
+.molstar-compact .msp-layout-right {
+  display: none !important;
+}
+
+/* Adjust control panel colors to match site theme */
+.msp-btn {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.msp-btn:hover {
+  background-color: #f9fafb;
+  border-color: #cbd5e1;
+}
+
+.msp-btn-link {
+  color: #3b82f6;
+}
+
+.msp-btn-link:hover {
+  color: #2563eb;
+}
+
+/* Adjust accordion headers */
+.msp-section-header {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Form controls */
+.msp-control-row {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.msp-control-row:last-child {
+  border-bottom: none;
+}
+
+/* Select dropdowns */
+.msp-form-control select {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 4px;
+}
+
+/* Input fields */
+.msp-form-control input[type="text"],
+.msp-form-control input[type="number"] {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 4px;
+}
+
+/* Scrollbars */
+.msp-scrollable-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.msp-scrollable-container::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+.msp-scrollable-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.msp-scrollable-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Viewport canvas container */
+.msp-viewport {
+  background-color: white;
+}
+
+/* Loading spinner */
+.msp-loader {
+  border-color: #3b82f6 transparent transparent transparent;
+}
+
+/* Toast notifications */
+.msp-toast-container {
+  font-family: 'Inter', sans-serif;
+}
+
+.msp-toast {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.msp-toast-error {
+  border-left: 4px solid #ef4444;
+}
+
+.msp-toast-info {
+  border-left: 4px solid #3b82f6;
+}
+
+.msp-toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+/* Measurement labels */
+.msp-measurement-label {
+  background-color: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Selection highlighting */
+.msp-highlight-info {
+  background-color: rgba(59, 130, 246, 0.15);
+  border: 1px solid #3b82f6;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #1e40af;
+}
+
+/* Make canvas take full available space */
+.msp-canvas3d-wrapper {
+  width: 100%;
+  height: 100%;
+}

@@ -1,42 +1,77 @@
 import React, { useEffect, useRef, useState } from "react";
 import config from "../config";
+import "../styles/molstar-custom.css";
 
-const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
-  const viewerRef = useRef(null);
+const ProteinViewer = ({
+  accession,
+  width = "100%",
+  height = "100%",
+  showControls = true,
+  initialStyle = "cartoon",
+  enableMeasurement = true,
+  enableSelection = true
+}) => {
   const containerRef = useRef(null);
+  const pluginRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!accession || typeof window === 'undefined') return;
 
-    let viewer = null;
+    let plugin = null;
     let isMounted = true;
 
-    const loadStructure = async () => {
+    const loadMolstarAndStructure = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        console.log('Loading structure for:', accession);
+        console.log('Loading Molstar for:', accession);
 
-        // Load 3Dmol from CDN if not already loaded
-        if (!window.$3Dmol) {
-          console.log('Loading 3Dmol from CDN...');
-          await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://3dmol.org/build/3Dmol-min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-          console.log('3Dmol loaded from CDN');
-        } else {
-          console.log('3Dmol already available');
+        // Import Molstar CSS first
+        await import('molstar/lib/mol-plugin-ui/skin/light.scss');
+
+        // Import Molstar modules with React 18 renderer
+        const { createPluginUI } = await import('molstar/lib/mol-plugin-ui');
+        const { renderReact18 } = await import('molstar/lib/mol-plugin-ui/react18');
+        const { DefaultPluginUISpec } = await import('molstar/lib/mol-plugin-ui/spec');
+
+        if (!isMounted || !containerRef.current) {
+          console.log('Component unmounted, aborting');
+          return;
         }
 
-        const $3Dmol = window.$3Dmol;
-        console.log('Using $3Dmol:', typeof $3Dmol);
+        console.log('Molstar loaded, creating plugin...');
+
+        // Ensure container has explicit pixel dimensions
+        const rect = containerRef.current.getBoundingClientRect();
+        console.log('Container dimensions:', rect.width, rect.height);
+
+        if (rect.width === 0 || rect.height === 0) {
+          throw new Error('Container has no dimensions');
+        }
+
+        containerRef.current.style.width = `${rect.width}px`;
+        containerRef.current.style.height = `${rect.height}px`;
+
+        // Create plugin with React 18 renderer
+        const spec = DefaultPluginUISpec();
+        plugin = await createPluginUI({
+          target: containerRef.current,
+          spec: spec,
+          render: renderReact18,
+        });
+
+        pluginRef.current = plugin;
+        console.log('Plugin created:', plugin);
+
+        // Hide controls if needed
+        if (!showControls && plugin.layout) {
+          plugin.layout.setProps({
+            showControls: false,
+          });
+        }
 
         // Get PDB info from backend
         const pdbUrl = `${config.apiUrl}/pdb/accession/${accession}`;
@@ -56,59 +91,85 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
           return;
         }
 
-        console.log('Container ref:', containerRef.current);
-        console.log('Is mounted:', isMounted);
-
-        // Initialize 3Dmol viewer
-        if (containerRef.current) {
-          console.log('Creating viewer in container:', containerRef.current);
-          viewer = $3Dmol.createViewer(containerRef.current, {
-            backgroundColor: 'white',
-          });
-          console.log('Viewer created:', viewer);
-
-          // Fetch and display PDB file
-          console.log('Fetching PDB file from:', pdbInfo.pdb_url);
-          const pdbResponse = await fetch(pdbInfo.pdb_url);
-          if (!pdbResponse.ok) {
-            throw new Error(`Failed to load PDB file: ${pdbResponse.status}`);
-          }
-
-          const pdbData = await pdbResponse.text();
-          console.log('PDB data loaded, length:', pdbData.length);
-
-          if (!isMounted) return;
-
-          viewer.addModel(pdbData, "pdb");
-          viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
-
-          // Center the structure first
-          viewer.zoomTo();
-
-          // Then apply consistent zoom level based on container size
-          // For small containers (featured cards 120px), zoom in moderately
-          // For large containers (detail page 500px), zoom in more
-          const containerHeight = containerRef.current.offsetHeight;
-          let zoomFactor;
-          if (containerHeight < 150) {
-            zoomFactor = 2.5; // Small cards - zoom in moderately
-          } else if (containerHeight < 300) {
-            zoomFactor = 2.5; // Medium - zoom in more
-          } else {
-            zoomFactor = 2.5; // Large - zoom in significantly
-          }
-
-          console.log('Container height:', containerHeight, 'Zoom factor:', zoomFactor);
-          viewer.zoom(zoomFactor, 0); // 0 = no animation
-
-          viewer.render();
-          viewerRef.current = viewer;
-          console.log('Structure rendered successfully');
-        } else {
-          console.error('Container ref is null! Cannot create viewer');
-          throw new Error('Container not available');
+        // Fetch PDB file
+        console.log('Fetching PDB file from:', pdbInfo.pdb_url);
+        const pdbResponse = await fetch(pdbInfo.pdb_url);
+        if (!pdbResponse.ok) {
+          throw new Error(`Failed to load PDB file: ${pdbResponse.status}`);
         }
 
+        const pdbData = await pdbResponse.text();
+        console.log('PDB data loaded, length:', pdbData.length);
+
+        if (!isMounted) return;
+
+        // Load structure into Molstar
+        console.log('Loading structure into Molstar...');
+        const data = await plugin.builders.data.rawData({
+          data: pdbData,
+          label: `${accession} Structure`
+        });
+
+        const trajectory = await plugin.builders.structure.parseTrajectory(data, 'pdb');
+        const model = await plugin.builders.structure.createModel(trajectory);
+        const structure = await plugin.builders.structure.createStructure(model);
+
+        // Apply representation based on initialStyle
+        let reprParams = {};
+        switch(initialStyle) {
+          case 'cartoon':
+            reprParams = {
+              type: 'cartoon',
+              typeParams: {},
+              color: 'sequence-id',
+              colorParams: {}
+            };
+            break;
+          case 'surface':
+            reprParams = {
+              type: 'molecular-surface',
+              typeParams: {},
+              color: 'hydrophobicity',
+              colorParams: {}
+            };
+            break;
+          case 'ball-and-stick':
+            reprParams = {
+              type: 'ball-and-stick',
+              typeParams: {},
+              color: 'element-symbol',
+              colorParams: {}
+            };
+            break;
+          default:
+            reprParams = {
+              type: 'cartoon',
+              typeParams: {},
+              color: 'sequence-id',
+              colorParams: {}
+            };
+        }
+
+        const representation = await plugin.builders.structure.representation.addRepresentation(structure, reprParams);
+
+        // Auto-focus on structure
+        const { Structure } = await import('molstar/lib/mol-model/structure');
+        const loci = Structure.toStructureElementLoci(structure.cell.obj.data);
+        await plugin.managers.camera.focusLoci(loci);
+
+        // Enable measurement tools if requested
+        if (enableMeasurement && plugin.managers.structure.measurement) {
+          console.log('Enabling measurement tools');
+          // Measurement tools are available through the UI when controls are shown
+        }
+
+        // Enable selection tools if requested
+        if (enableSelection && plugin.managers.structure.selection) {
+          console.log('Enabling selection tools');
+          // Selection is enabled by default in Molstar
+        }
+
+        console.log('Structure loaded successfully');
         setLoading(false);
       } catch (err) {
         console.error('Error loading structure:', err);
@@ -119,19 +180,29 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
       }
     };
 
-    loadStructure();
+    loadMolstarAndStructure();
 
     return () => {
       isMounted = false;
-      if (viewerRef.current) {
-        // Cleanup viewer if needed
-        viewerRef.current = null;
+      if (pluginRef.current) {
+        console.log('Disposing plugin');
+        pluginRef.current.dispose();
+        pluginRef.current = null;
       }
     };
-  }, [accession]);
+  }, [accession, showControls, initialStyle, enableMeasurement, enableSelection]);
+
+  // Hide header when hovering over structure viewer
+  const handleMouseEnter = () => {
+    const header = document.querySelector('.ui-section-header');
+    if (header && window.pageYOffset > 100) {
+      header.classList.add('header-hidden');
+    }
+  };
 
   return (
     <div
+      onMouseEnter={handleMouseEnter}
       style={{
         width,
         height,
@@ -140,7 +211,7 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
         overflow: 'hidden'
       }}
     >
-      {/* Always render the viewer container */}
+      {/* Molstar plugin container */}
       <div
         ref={containerRef}
         style={{
@@ -152,7 +223,7 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
         }}
       />
 
-      {/* Overlay loading/error messages */}
+      {/* Loading overlay */}
       {loading && (
         <div
           style={{
@@ -174,6 +245,7 @@ const ProteinViewer = ({ accession, width = "100%", height = "100%" }) => {
         </div>
       )}
 
+      {/* Error overlay */}
       {error && !loading && (
         <div
           style={{

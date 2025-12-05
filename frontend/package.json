@@ -10,13 +10,16 @@
     "gatsby-link": "^5.14.1",
     "gatsby-plugin-image": "^3.14.0",
     "gatsby-plugin-manifest": "^5.14.0",
+    "gatsby-plugin-sass": "^6.15.0",
     "gatsby-plugin-sharp": "^5.14.0",
     "gatsby-source-filesystem": "^5.14.0",
     "gatsby-transformer-sharp": "^5.14.0",
+    "molstar": "^5.4.1",
     "node-fetch": "^2.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "recharts": "^3.4.1"
+    "recharts": "^3.4.1",
+    "sass": "^1.94.2"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

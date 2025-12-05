@@ -30,7 +30,14 @@ export default function StructurePanel({ accession }) {
           height: "500px",
           backgroundColor: "#ffffff"
         }}>
-          <ProteinViewer accession={accession} width="100%" height="500px" />
+          <ProteinViewer
+            accession={accession}
+            width="100%"
+            height="500px"
+            showControls={true}
+            enableMeasurement={true}
+            enableSelection={true}
+          />
         </div>
       </div>
 

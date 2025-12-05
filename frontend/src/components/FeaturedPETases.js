@@ -155,7 +155,14 @@ const FeaturedPETases = ({ sequences, loading }) => {
           height: "120px",
           marginBottom: "1.25rem"
         }}>
-          <ProteinViewer accession={seq.accession} width="120px" height="120px" />
+          <ProteinViewer
+            accession={seq.accession}
+            width="120px"
+            height="120px"
+            showControls={false}
+            enableMeasurement={false}
+            enableSelection={false}
+          />
         </div>
 
         {/* Name/Label */}

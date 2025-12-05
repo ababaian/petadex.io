@@ -5,6 +5,22 @@
  */
 
 /**
+ * Configure webpack for Molstar
+ * @type {import('gatsby').GatsbyNode['onCreateWebpackConfig']}
+ */
+exports.onCreateWebpackConfig = ({ actions }) => {
+  actions.setWebpackConfig({
+    resolve: {
+      fallback: {
+        fs: false,
+        path: false,
+        crypto: false,
+      }
+    }
+  });
+};
+
+/**
  * @type {import('gatsby').GatsbyNode['createPages']}
  */
 exports.createPages = async ({ actions }) => {
