@@ -16,6 +16,7 @@ cd backend
 npm ci                    # Install dependencies
 npm run dev              # Start dev server with nodemon (port 3001)
 npm run start            # Start production server
+npm run local            # Alias for start (node src/index.js)
 npm test                 # Run tests
 ```
 
@@ -34,8 +35,9 @@ PORT=3001
 cd frontend
 npm ci                    # Install dependencies
 npm run develop          # Dev server (http://localhost:8000)
+npm run start            # Alias for develop
 npm run build            # Production build
-npm run serve            # Serve production build locally
+npm run serve            # Serve production build locally (http://localhost:9000)
 npm run clean            # Clear Gatsby cache
 npm run format           # Format with Prettier
 ```
@@ -81,9 +83,10 @@ User Browser → GitHub Pages (Static Gatsby) → CORS Request → EC2/NGINX →
 
 **Page Generation Strategy** (`gatsby-node.js`):
 1. Creates client-only route fallback for `/sequence/*`
-2. At build time, fetches all sequences from API
+2. At build time, fetches all sequences from API (with 10s timeout)
 3. Pre-renders individual pages for each sequence at `/sequence/{accession}`
 4. Gracefully degrades to client-side rendering if API unavailable during build
+5. Configures webpack fallbacks for Molstar (disables `fs`, `path`, `crypto` polyfills)
 
 **Component Structure**:
 - **Pages** (`src/pages/`): Static routes (index, fastaa, 404)
@@ -91,14 +94,17 @@ User Browser → GitHub Pages (Static Gatsby) → CORS Request → EC2/NGINX →
 - **Components** (`src/components/`):
   - `DataViewer` - Tab-based container (Sequence, Structure, Metadata)
   - `SequencePanel` - Amino acid sequence display
-  - `StructurePanel` - 3D protein viewer (uses 3Dmol library)
+  - `StructurePanel` - 3D protein viewer wrapper
   - `MetadataPanel` - Sequence metadata display
   - `SynthesizedGenePanel` - Gene experiments with Recharts visualization
-  - `ProteinViewer` - 3Dmol wrapper for PDB structures
+  - `ProteinViewer` - Molstar wrapper for PDB structures (React 18 integration)
   - `FeaturedPETases` - Highlighted sequences on main page
   - `SequenceViewer` - Reusable sequence renderer
 
-**Styling**: Inline CSS-in-JS (object styles) - no separate CSS files except `layout.css`
+**Styling**: Primarily inline CSS-in-JS (object styles). Separate CSS files exist in `src/styles/`:
+- `layout.css` - Global layout styles
+- `home.css` - Homepage-specific styles
+- `molstar-custom.css` - Custom Molstar viewer styling
 
 ### Database Schema (PostgreSQL)
 
@@ -230,14 +236,19 @@ PDB files are loaded via `/api/pdb/accession/{accession}` which returns:
 }
 ```
 
-The `ProteinViewer` component fetches and displays using 3Dmol library.
+The `ProteinViewer` component uses Molstar library for 3D visualization:
+- Dynamically imports Molstar modules to avoid SSR issues
+- Uses React 18 renderer (`renderReact18` from Molstar)
+- Loads structures from S3 URLs returned by the API
+- Custom styling via `molstar-custom.css`
 
 ## Known Patterns to Follow
 
 1. **No ORMs**: Use raw SQL with parameterized queries
-2. **Inline Styles**: All React styling via style objects, not CSS files
+2. **Inline Styles**: Prefer inline style objects for component-specific styling; use `src/styles/` for global/library styles
 3. **Client-Side Data**: Fetch data in useEffect hooks, not at build time (except gatsby-node)
 4. **URL Patterns**: Sequence pages at `/sequence/{accession}`, not `/sequences/` or `/seq/`
 5. **API Prefix**: All backend routes under `/api/` namespace
 6. **CORS**: Update whitelist in `app.js` when adding new frontend domains
 7. **Centralized Config**: Import `config` from `src/config.js` for API URLs - never hard-code or use `process.env` directly in components
+8. **Molstar Integration**: Dynamic imports with React 18 renderer; configure webpack fallbacks in `gatsby-node.js`

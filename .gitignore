@@ -36,3 +36,4 @@ TMP*
 node_modules/
 tree_output.txt
 generated-schema.md
+CLAUDE.md
