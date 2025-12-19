@@ -1,10 +1,10 @@
 // frontend/src/templates/sequence.js
 import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
+import "../styles/home.css";
 import DataViewer from "../components/DataViewer";
 import SynthesizedGenePanel from "../components/SynthesizedGenePanel";
 import config from "../config";
-import "../styles/home.css";
 import { useScrollHeader } from "../hooks/useScrollHeader";
 
 export default function SequenceTemplate({ pageContext }) {

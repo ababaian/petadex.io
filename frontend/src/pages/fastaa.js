@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "gatsby";
+import "../styles/home.css";
 import SequenceViewer from "../components/SequenceViewer";
 import FeaturedPETases from "../components/FeaturedPETases";
 import config from "../config";
-import "../styles/home.css";
 import { useScrollHeader } from "../hooks/useScrollHeader";
 
 const FastaaPage = () => {
